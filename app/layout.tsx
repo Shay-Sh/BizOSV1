@@ -1,7 +1,7 @@
 'use client'
 
 import './globals.css'
-import { ClerkProvider } from '@clerk/nextjs'
+import { AuthProvider } from '@/lib/supabase/auth-context'
 import { Inter } from 'next/font/google'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -12,7 +12,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <ClerkProvider>
+    <AuthProvider>
       <html lang="en">
         <head>
           <link rel="icon" href="/favicon.ico" />
@@ -21,6 +21,6 @@ export default function RootLayout({
           {children}
         </body>
       </html>
-    </ClerkProvider>
+    </AuthProvider>
   )
 } 

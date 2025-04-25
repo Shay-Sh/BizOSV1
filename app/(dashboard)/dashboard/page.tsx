@@ -1,115 +1,53 @@
-import { currentUser } from '@clerk/nextjs';
-import { Metadata } from 'next';
-import Link from 'next/link';
-import { Header } from '../../components/Header';
+'use client';
 
-export const metadata: Metadata = {
+import { Metadata } from 'next';
+import { useRouter } from 'next/navigation';
+import { ErrorBoundary } from 'react-error-boundary';
+import { useAuth } from '@/lib/supabase/auth-context';
+import DashboardClient from './dashboard-client';
+
+export const metadata = {
   title: 'Dashboard | BizOS',
-  description: 'BizOS dashboard',
+  description: 'Manage your business efficiently with BizOS dashboard',
 };
 
-export default async function DashboardPage() {
-  const user = await currentUser();
-  
+function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      
-      {/* Main content */}
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Welcome, {user?.firstName || 'User'}!</h1>
-          <p className="mt-2 text-gray-600">Here's what's happening with your AI agents today.</p>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          
-          {/* Quick Actions Card */}
-          <div className="bg-white p-6 rounded-lg shadow-md row-span-1">
-            <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
-            <div className="space-y-2">
-              <button className="w-full bg-primary text-white py-2 px-4 rounded hover:bg-blue-600 transition">
-                Create New Agent
-              </button>
-              <button className="w-full bg-gray-100 text-gray-800 py-2 px-4 rounded hover:bg-gray-200 transition">
-                Browse Marketplace
-              </button>
-              <button className="w-full bg-gray-100 text-gray-800 py-2 px-4 rounded hover:bg-gray-200 transition">
-                Manage Credentials
-              </button>
-            </div>
-          </div>
-          
-          {/* Stats Card */}
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h2 className="text-lg font-semibold mb-4">Your Stats</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="text-center">
-                <p className="text-2xl font-bold text-primary">0</p>
-                <p className="text-sm text-gray-600">Active Agents</p>
-              </div>
-              <div className="text-center">
-                <p className="text-2xl font-bold text-primary">0</p>
-                <p className="text-sm text-gray-600">Total Executions</p>
-              </div>
-              <div className="text-center">
-                <p className="text-2xl font-bold text-primary">0</p>
-                <p className="text-sm text-gray-600">Workflows</p>
-              </div>
-              <div className="text-center">
-                <p className="text-2xl font-bold text-primary">0</p>
-                <p className="text-sm text-gray-600">Pending Approvals</p>
-              </div>
-            </div>
-          </div>
-          
-          {/* Recent Activity Card */}
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h2 className="text-lg font-semibold mb-4">Recent Activity</h2>
-            <div className="space-y-4">
-              <p className="text-sm text-gray-600 italic text-center py-4">
-                No recent activity to display.
-              </p>
-            </div>
-          </div>
-          
-          {/* Getting Started Card */}
-          <div className="bg-white p-6 rounded-lg shadow-md col-span-full mt-4">
-            <div className="flex items-start">
-              <div className="flex-1">
-                <h2 className="text-lg font-semibold mb-2">Get Started with BizOS</h2>
-                <p className="text-gray-600 mb-4">
-                  Complete these steps to fully configure your AI agents and workflows.
-                </p>
-                <ul className="space-y-3">
-                  <li className="flex items-center">
-                    <span className="h-6 w-6 rounded-full bg-blue-100 text-primary flex items-center justify-center mr-3 text-sm">1</span>
-                    <span className="text-gray-700">Create your first AI agent</span>
-                  </li>
-                  <li className="flex items-center">
-                    <span className="h-6 w-6 rounded-full bg-blue-100 text-primary flex items-center justify-center mr-3 text-sm">2</span>
-                    <span className="text-gray-700">Set up integrations and credentials</span>
-                  </li>
-                  <li className="flex items-center">
-                    <span className="h-6 w-6 rounded-full bg-blue-100 text-primary flex items-center justify-center mr-3 text-sm">3</span>
-                    <span className="text-gray-700">Design your first workflow</span>
-                  </li>
-                  <li className="flex items-center">
-                    <span className="h-6 w-6 rounded-full bg-blue-100 text-primary flex items-center justify-center mr-3 text-sm">4</span>
-                    <span className="text-gray-700">Run and monitor your workflow</span>
-                  </li>
-                </ul>
-              </div>
-              <div>
-                <button className="bg-primary text-white py-2 px-4 rounded hover:bg-blue-600 transition">
-                  Start Tutorial
-                </button>
-              </div>
-            </div>
-          </div>
-          
-        </div>
-      </main>
+    <div className="flex flex-col items-center justify-center min-h-screen p-5">
+      <h2 className="text-2xl font-bold text-red-600 mb-4">Something went wrong:</h2>
+      <pre className="text-sm bg-gray-100 p-4 rounded-md overflow-auto max-w-full">{error.message}</pre>
+      <button
+        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+        onClick={resetErrorBoundary}
+      >
+        Try again
+      </button>
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  const router = useRouter();
+  const { user, isLoading } = useAuth();
+  
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+  
+  // Redirect if not authenticated
+  if (!user) {
+    router.push('/sign-in');
+    return null;
+  }
+
+  return (
+    <ErrorBoundary FallbackComponent={ErrorFallback}>
+      <DashboardClient user={user} />
+    </ErrorBoundary>
   );
 } 
