@@ -65,6 +65,17 @@ This document outlines the architecture and components for building a comprehens
 - API key management for programmatic access
 - Usage statistics and limits
 
+### Super-Admin Role
+- Platform-wide administration capabilities
+- User and organization management
+- System configuration and settings
+- Analytics dashboard access
+- Service health monitoring
+- Content moderation tools
+- Agent template approval
+- Billing management
+- Feature flag controls
+
 ### Database Schema
 ```sql
 -- User profiles (extends Clerk user data)
@@ -77,6 +88,17 @@ CREATE TABLE user_profiles (
   last_login TIMESTAMP WITH TIME ZONE,
   role TEXT DEFAULT 'user',
   settings JSONB DEFAULT '{}'
+);
+
+-- Super-admin privileges
+CREATE TABLE admin_privileges (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES auth.users NOT NULL,
+  privilege_level TEXT NOT NULL DEFAULT 'full',
+  granted_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  granted_by UUID REFERENCES auth.users,
+  notes TEXT,
+  UNIQUE (user_id)
 );
 ```
 

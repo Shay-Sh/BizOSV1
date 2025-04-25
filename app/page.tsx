@@ -1,3 +1,5 @@
+import React from 'react';
+import Dashboard from './Dashboard';
 import Link from 'next/link'
 import { Metadata } from 'next'
 import { Header } from './components/Header'
@@ -7,7 +9,11 @@ export const metadata: Metadata = {
   description: 'Create, customize, and deploy AI agents for workflows without coding knowledge',
 };
 
-export default function Home() {
+export default function HomePage() {
+  return <Dashboard />;
+}
+
+export function Home() {
   return (
     <div className="flex min-h-screen flex-col">
       <Header />

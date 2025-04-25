@@ -3,9 +3,9 @@
 import { useAuth } from '@/lib/supabase/auth-context';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import DashboardLayout from '@/components/layout/DashboardLayout';
+import AppLayout from '@/components/layout/DashboardLayout';
 
-export default function DashboardRootLayout({
+export default function AppRootLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -24,10 +24,10 @@ export default function DashboardRootLayout({
   useEffect(() => {
     // Only perform checks after loading is complete and we're in the browser
     if (!isLoading && isClient) {
-      console.log('Dashboard Layout: Auth check completed', user ? 'User authenticated' : 'No user');
+      console.log('App Layout: Auth check completed', user ? 'User authenticated' : 'No user');
       
       if (!user && !redirectAttempted) {
-        console.log('Dashboard Layout: No user found, redirecting to sign-in');
+        console.log('App Layout: No user found, redirecting to sign-in');
         setRedirectAttempted(true);
         window.location.href = '/sign-in';
         return;
@@ -68,10 +68,10 @@ export default function DashboardRootLayout({
     );
   }
 
-  // Only render the dashboard when we're sure the user is authenticated
+  // Only render the app when we're sure the user is authenticated
   return (
-    <DashboardLayout>
+    <AppLayout>
       {children}
-    </DashboardLayout>
+    </AppLayout>
   );
 } 
