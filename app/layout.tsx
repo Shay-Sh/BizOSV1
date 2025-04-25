@@ -14,8 +14,11 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en">
-        <body className={inter.className}>
-          <main className="min-h-screen bg-gray-50">{children}</main>
+        <head>
+          <link rel="icon" href="/favicon.ico" />
+        </head>
+        <body className={`${inter.className} min-h-screen bg-gray-50`}>
+          {children}
         </body>
       </html>
     </ClerkProvider>

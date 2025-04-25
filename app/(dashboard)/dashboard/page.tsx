@@ -1,5 +1,7 @@
-import { UserButton, currentUser } from '@clerk/nextjs';
+import { currentUser } from '@clerk/nextjs';
 import { Metadata } from 'next';
+import Link from 'next/link';
+import { Header } from '../../components/Header';
 
 export const metadata: Metadata = {
   title: 'Dashboard | BizOS',
@@ -11,34 +13,19 @@ export default async function DashboardPage() {
   
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow">
-        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
-          <h1 className="text-2xl font-bold tracking-tight text-primary">BizOS Dashboard</h1>
-          <div className="flex items-center space-x-4">
-            <span className="text-sm text-gray-600">
-              {user?.firstName} {user?.lastName}
-            </span>
-            <UserButton afterSignOutUrl="/" />
-          </div>
-        </div>
-      </header>
+      <Header />
       
       {/* Main content */}
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Welcome, {user?.firstName || 'User'}!</h1>
+          <p className="mt-2 text-gray-600">Here's what's happening with your AI agents today.</p>
+        </div>
+        
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           
-          {/* Welcome Card */}
-          <div className="bg-white p-6 rounded-lg shadow-md col-span-full">
-            <h2 className="text-xl font-semibold mb-2">Welcome to BizOS!</h2>
-            <p className="text-gray-600">
-              This is your dashboard where you can manage your AI agents and workflows.
-              Get started by creating your first agent or exploring the marketplace.
-            </p>
-          </div>
-          
           {/* Quick Actions Card */}
-          <div className="bg-white p-6 rounded-lg shadow-md">
+          <div className="bg-white p-6 rounded-lg shadow-md row-span-1">
             <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
             <div className="space-y-2">
               <button className="w-full bg-primary text-white py-2 px-4 rounded hover:bg-blue-600 transition">
@@ -83,6 +70,41 @@ export default async function DashboardPage() {
               <p className="text-sm text-gray-600 italic text-center py-4">
                 No recent activity to display.
               </p>
+            </div>
+          </div>
+          
+          {/* Getting Started Card */}
+          <div className="bg-white p-6 rounded-lg shadow-md col-span-full mt-4">
+            <div className="flex items-start">
+              <div className="flex-1">
+                <h2 className="text-lg font-semibold mb-2">Get Started with BizOS</h2>
+                <p className="text-gray-600 mb-4">
+                  Complete these steps to fully configure your AI agents and workflows.
+                </p>
+                <ul className="space-y-3">
+                  <li className="flex items-center">
+                    <span className="h-6 w-6 rounded-full bg-blue-100 text-primary flex items-center justify-center mr-3 text-sm">1</span>
+                    <span className="text-gray-700">Create your first AI agent</span>
+                  </li>
+                  <li className="flex items-center">
+                    <span className="h-6 w-6 rounded-full bg-blue-100 text-primary flex items-center justify-center mr-3 text-sm">2</span>
+                    <span className="text-gray-700">Set up integrations and credentials</span>
+                  </li>
+                  <li className="flex items-center">
+                    <span className="h-6 w-6 rounded-full bg-blue-100 text-primary flex items-center justify-center mr-3 text-sm">3</span>
+                    <span className="text-gray-700">Design your first workflow</span>
+                  </li>
+                  <li className="flex items-center">
+                    <span className="h-6 w-6 rounded-full bg-blue-100 text-primary flex items-center justify-center mr-3 text-sm">4</span>
+                    <span className="text-gray-700">Run and monitor your workflow</span>
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <button className="bg-primary text-white py-2 px-4 rounded hover:bg-blue-600 transition">
+                  Start Tutorial
+                </button>
+              </div>
             </div>
           </div>
           
