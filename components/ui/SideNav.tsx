@@ -46,6 +46,9 @@ const SideNav = ({
     if (href === '/dashboard' && pathname === '/dashboard') {
       return true;
     }
+    if (!pathname) {
+      return false;
+    }
     return pathname.startsWith(href) && href !== '/dashboard';
   };
 
