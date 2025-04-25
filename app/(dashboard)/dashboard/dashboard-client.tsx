@@ -4,7 +4,7 @@ import { User } from '@supabase/supabase-js';
 import { useState, useEffect } from 'react';
 
 interface DashboardClientProps {
-  user: User;
+  user: User | null;
 }
 
 export default function DashboardClient({ user }: DashboardClientProps) {
