@@ -9,20 +9,56 @@ interface DashboardClientProps {
 
 export default function DashboardClient({ user }: DashboardClientProps) {
   const [isLoading, setIsLoading] = useState(true);
+  const [renderAttempt, setRenderAttempt] = useState(0);
 
   useEffect(() => {
+    console.log('DashboardClient: Component mounted, user:', user?.email);
+    
     // Simulate data loading
     const timer = setTimeout(() => {
       setIsLoading(false);
+      console.log('DashboardClient: Finished loading');
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [user]);
+
+  // Force re-render if needed
+  useEffect(() => {
+    if (!isLoading && renderAttempt < 1) {
+      // Try one more render attempt after a short delay
+      const timer = setTimeout(() => {
+        console.log('DashboardClient: Attempting re-render');
+        setRenderAttempt(renderAttempt + 1);
+      }, 200);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, renderAttempt]);
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="flex items-center justify-center h-[calc(100vh-64px)]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+          <p className="text-gray-600">Loading your dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Make sure we have a user before rendering
+  if (!user || !user.email) {
+    return (
+      <div className="container mx-auto px-4 py-8 text-center">
+        <h1 className="text-2xl font-bold text-red-600 mb-4">User data not available</h1>
+        <p className="text-gray-600 mb-4">There was a problem loading your profile data.</p>
+        <button 
+          onClick={() => window.location.reload()}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+        >
+          Reload Page
+        </button>
       </div>
     );
   }

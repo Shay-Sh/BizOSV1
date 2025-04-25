@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/supabase/auth-context';
 
@@ -12,27 +12,38 @@ export default function SignInForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [signInSuccess, setSignInSuccess] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
   const { user, signIn } = useAuth();
 
   // Automatically redirect if user is already logged in
+  // But only do this once to prevent loops
   useEffect(() => {
-    if (user) {
-      console.log('SignInForm: User already authenticated, redirecting to dashboard');
-      router.push('/dashboard');
+    // Prevent redirect loop by tracking if we've already tried to redirect
+    const hasAttemptedRedirect = sessionStorage.getItem('redirectAttempted');
+    
+    if (user && !hasAttemptedRedirect && pathname === '/sign-in') {
+      console.log('SignInForm: User already authenticated, redirecting to dashboard once');
+      sessionStorage.setItem('redirectAttempted', 'true');
+      window.location.href = '/dashboard';
     }
-  }, [user, router]);
+    
+    // Clean up redirect flag when component unmounts
+    return () => {
+      // Only clean up if we're not on the sign-in page anymore
+      if (pathname !== '/sign-in') {
+        sessionStorage.removeItem('redirectAttempted');
+      }
+    };
+  }, [user, router, pathname]);
 
   // Handle successful sign-in with a delay to ensure auth context updates
   useEffect(() => {
     if (signInSuccess) {
-      const timer = setTimeout(() => {
-        console.log('SignInForm: Navigating to dashboard after successful sign-in');
-        router.push('/dashboard');
-      }, 1000);
-
-      return () => clearTimeout(timer);
+      console.log('SignInForm: Navigating to dashboard after successful sign-in');
+      // Use direct window.location change to ensure a full page reload
+      window.location.href = '/dashboard';
     }
-  }, [signInSuccess, router]);
+  }, [signInSuccess]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -14,6 +14,7 @@ export default function DashboardLayout({
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
+  const [redirectAttempted, setRedirectAttempted] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
@@ -25,14 +26,16 @@ export default function DashboardLayout({
     if (!isLoading && isClient) {
       console.log('Dashboard Layout: Auth check completed', user ? 'User authenticated' : 'No user');
       
-      if (!user) {
+      if (!user && !redirectAttempted) {
         console.log('Dashboard Layout: No user found, redirecting to sign-in');
-        router.push('/sign-in');
+        setRedirectAttempted(true);
+        window.location.href = '/sign-in';
+        return;
       }
       
       setAuthChecked(true);
     }
-  }, [isLoading, user, router, isClient]);
+  }, [isLoading, user, router, isClient, redirectAttempted]);
 
   // Show loading state while checking authentication
   if (isLoading || !isClient || !authChecked) {
@@ -52,7 +55,10 @@ export default function DashboardLayout({
         <div className="text-center">
           <p className="text-gray-600 mb-4">You need to be signed in to access this page</p>
           <button 
-            onClick={() => router.push('/sign-in')}
+            onClick={() => {
+              sessionStorage.removeItem('redirectAttempted');
+              window.location.href = '/sign-in';
+            }}
             className="px-4 py-2 bg-primary text-white rounded-md"
           >
             Go to Sign In
