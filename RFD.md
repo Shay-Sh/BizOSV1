@@ -10,7 +10,7 @@ This document outlines the architecture and components for building a comprehens
 - **Frontend**: Next.js with TypeScript and Tailwind CSS
 - **Backend**: Serverless functions on Vercel
 - **Database**: Supabase PostgreSQL
-- **Authentication**: Clerk
+- **Authentication**: Supabase Auth
 - **Workflow Engine**: Custom built on Vercel
 - **Billing**: Stripe Integration
 - **Deployment**: Vercel

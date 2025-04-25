@@ -22,10 +22,12 @@
 - [x] Deploy to Vercel
 - [x] Connect Supabase to Vercel
 - [x] Create landing page
-- [x] Set up Clerk authentication
+- [x] ~~Set up Clerk authentication~~ (Replaced with Supabase Auth)
+- [x] Implement Supabase authentication
+- [x] Create sign-in and sign-up forms
 
 ### In Progress
-- [ ] Implement proper sign-in and sign-up flow
+- [ ] Polish authentication flow
 - [ ] Create dashboard layout
 - [ ] Add navigation between pages
 - [ ] Implement brand identity
@@ -48,7 +50,8 @@
 ## Notes
 - Successfully deployed to Vercel
 - Supabase integration with Vercel completed
-- Need to fix authentication flow routing
+- Replaced Clerk authentication with native Supabase Auth for better integration
+- Created custom sign-in/sign-up forms using Supabase Auth
 
 ## Last Updated
 <!-- Will be updated with each status change -->

@@ -1,12 +1,10 @@
-'use client';
-
 import { Metadata } from 'next';
-import { useRouter } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import { ErrorBoundary } from 'react-error-boundary';
-import { useAuth } from '@/lib/supabase/auth-context';
 import DashboardClient from './dashboard-client';
+import { createServerClient } from '@/lib/supabase/client';
 
-export const metadata = {
+export const metadata: Metadata = {
   title: 'Dashboard | BizOS',
   description: 'Manage your business efficiently with BizOS dashboard',
 };
@@ -26,28 +24,19 @@ function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetError
   );
 }
 
-export default function DashboardPage() {
-  const router = useRouter();
-  const { user, isLoading } = useAuth();
-  
-  // Show loading state
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-      </div>
-    );
-  }
+export default async function DashboardPage() {
+  // Server-side auth check
+  const supabase = createServerClient();
+  const { data: { session } } = await supabase.auth.getSession();
   
   // Redirect if not authenticated
-  if (!user) {
-    router.push('/sign-in');
-    return null;
+  if (!session) {
+    redirect('/sign-in');
   }
 
   return (
     <ErrorBoundary FallbackComponent={ErrorFallback}>
-      <DashboardClient user={user} />
+      <DashboardClient user={session.user} />
     </ErrorBoundary>
   );
 } 

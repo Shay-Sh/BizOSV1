@@ -6,9 +6,6 @@ const nextConfig = {
   eslint: {
     dirs: ['app', 'components', 'lib', 'types'],
   },
-  experimental: {
-    serverActions: true,
-  },
 }
 
 module.exports = nextConfig 
