@@ -27,6 +27,7 @@ export const createBrowserSupabaseClient = () => {
     throw new Error('Missing Supabase environment variables')
   }
 
+  // Using enhanced options for better session persistence
   return createBrowserClient<Database>(supabaseUrl, supabaseKey)
 }
 

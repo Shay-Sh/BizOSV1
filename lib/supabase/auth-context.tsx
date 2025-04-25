@@ -21,42 +21,81 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session
-    browserSupabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setIsLoading(false);
-    });
+    console.log('AuthContext: Initializing auth state');
+    
+    const fetchSession = async () => {
+      try {
+        // Get initial session
+        const { data, error } = await browserSupabase.auth.getSession();
+        
+        if (error) {
+          console.error('AuthContext: Error fetching session', error);
+        } else {
+          console.log('AuthContext: Session fetched successfully', 
+            data.session ? 'User is authenticated' : 'No active session');
+          
+          setSession(data.session);
+          setUser(data.session?.user ?? null);
+        }
+      } catch (err) {
+        console.error('AuthContext: Unexpected error during session fetch', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchSession();
 
     // Listen for auth changes
     const { data: { subscription } } = browserSupabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (event, session) => {
+        console.log('AuthContext: Auth state changed', event, session ? 'User session exists' : 'No session');
         setSession(session);
         setUser(session?.user ?? null);
         setIsLoading(false);
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      console.log('AuthContext: Cleaning up auth subscription');
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signUp = async (email: string, password: string) => {
+    console.log('AuthContext: Signing up user', email);
     const { error } = await browserSupabase.auth.signUp({
       email,
       password,
     });
+    
+    if (error) {
+      console.error('AuthContext: Sign up failed', error);
+    } else {
+      console.log('AuthContext: Sign up successful');
+    }
+    
     return { error };
   };
 
   const signIn = async (email: string, password: string) => {
+    console.log('AuthContext: Signing in user', email);
     const { error } = await browserSupabase.auth.signInWithPassword({
       email,
       password,
     });
+    
+    if (error) {
+      console.error('AuthContext: Sign in failed', error);
+    } else {
+      console.log('AuthContext: Sign in successful');
+    }
+    
     return { error };
   };
 
   const signOut = async () => {
+    console.log('AuthContext: Signing out user');
     await browserSupabase.auth.signOut();
   };
 

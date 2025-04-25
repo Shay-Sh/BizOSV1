@@ -13,22 +13,29 @@ export default function DashboardLayout({
   const { user, isLoading } = useAuth();
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
-    
-    // Check if we're on the client side
-    if (typeof window !== 'undefined') {
-      if (!isLoading && !user) {
-        console.log('No user detected in dashboard layout, redirecting to sign-in');
-        // Use window.location for a hard redirect that resets authentication state
-        window.location.href = '/sign-in';
+  }, []);
+
+  // Separate useEffect for auth check to avoid race conditions
+  useEffect(() => {
+    // Only perform checks after loading is complete and we're in the browser
+    if (!isLoading && isClient) {
+      console.log('Dashboard Layout: Auth check completed', user ? 'User authenticated' : 'No user');
+      
+      if (!user) {
+        console.log('Dashboard Layout: No user found, redirecting to sign-in');
+        router.push('/sign-in');
       }
+      
+      setAuthChecked(true);
     }
-  }, [isLoading, user, router]);
+  }, [isLoading, user, router, isClient]);
 
   // Show loading state while checking authentication
-  if (isLoading || !isClient) {
+  if (isLoading || !isClient || !authChecked) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -45,7 +52,7 @@ export default function DashboardLayout({
         <div className="text-center">
           <p className="text-gray-600 mb-4">You need to be signed in to access this page</p>
           <button 
-            onClick={() => window.location.href = '/sign-in'} 
+            onClick={() => router.push('/sign-in')}
             className="px-4 py-2 bg-primary text-white rounded-md"
           >
             Go to Sign In
@@ -55,6 +62,7 @@ export default function DashboardLayout({
     );
   }
 
+  // Only render the dashboard when we're sure the user is authenticated
   return (
     <div className="min-h-screen flex flex-col">
       <Header />

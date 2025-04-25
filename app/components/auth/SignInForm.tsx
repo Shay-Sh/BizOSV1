@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/supabase/auth-context';
@@ -10,8 +10,29 @@ export default function SignInForm() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [signInSuccess, setSignInSuccess] = useState(false);
   const router = useRouter();
-  const { signIn } = useAuth();
+  const { user, signIn } = useAuth();
+
+  // Automatically redirect if user is already logged in
+  useEffect(() => {
+    if (user) {
+      console.log('SignInForm: User already authenticated, redirecting to dashboard');
+      router.push('/dashboard');
+    }
+  }, [user, router]);
+
+  // Handle successful sign-in with a delay to ensure auth context updates
+  useEffect(() => {
+    if (signInSuccess) {
+      const timer = setTimeout(() => {
+        console.log('SignInForm: Navigating to dashboard after successful sign-in');
+        router.push('/dashboard');
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [signInSuccess, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,23 +40,22 @@ export default function SignInForm() {
     setIsLoading(true);
 
     try {
+      console.log('SignInForm: Attempting to sign in user', email);
       const { error } = await signIn(email, password);
       
       if (error) {
+        console.error('SignInForm: Sign-in failed with error', error.message);
         setError(error.message);
         setIsLoading(false);
         return;
       }
 
       // Successful sign-in
-      console.log('Sign-in successful, redirecting to dashboard...');
-      
-      // Replace the current history entry with the dashboard page
-      // This avoids issues with the back button and navigation
-      window.location.href = '/dashboard';
+      console.log('SignInForm: Sign-in successful, preparing to redirect');
+      setSignInSuccess(true);
       
     } catch (err) {
-      console.error('Sign in error:', err);
+      console.error('SignInForm: Unexpected error during sign-in', err);
       setError('An unexpected error occurred');
       setIsLoading(false);
     }
@@ -84,10 +104,10 @@ export default function SignInForm() {
         
         <button
           type="submit"
-          disabled={isLoading}
+          disabled={isLoading || signInSuccess}
           className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isLoading ? 'Signing in...' : 'Sign In'}
+          {isLoading ? 'Signing in...' : signInSuccess ? 'Redirecting...' : 'Sign In'}
         </button>
       </form>
       
