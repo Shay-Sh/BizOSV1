@@ -25,20 +25,22 @@ export function Header({ showAuth = true }: HeaderProps) {
             <Link href="/" className="flex-shrink-0 flex items-center">
               <span className="text-xl font-bold text-primary">BizOS</span>
             </Link>
-            <nav className="ml-6 flex items-center space-x-4">
-              <Link 
-                href="/dashboard" 
-                className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-primary"
-              >
-                Dashboard
-              </Link>
-              <Link 
-                href="/agents" 
-                className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-primary"
-              >
-                Agents
-              </Link>
-            </nav>
+            {user && (
+              <nav className="ml-6 flex items-center space-x-4">
+                <Link 
+                  href="/dashboard" 
+                  className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-primary"
+                >
+                  Dashboard
+                </Link>
+                <Link 
+                  href="/agents" 
+                  className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-primary"
+                >
+                  Agents
+                </Link>
+              </nav>
+            )}
           </div>
         
           <div className="flex items-center">

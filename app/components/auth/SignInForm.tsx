@@ -27,8 +27,15 @@ export default function SignInForm() {
         return;
       }
 
-      // Redirect to dashboard on successful sign-in
-      router.push('/dashboard');
+      // Successful sign-in
+      console.log('Sign-in successful, redirecting to dashboard...');
+      
+      // Add a small delay to ensure the auth state is updated in context
+      setTimeout(() => {
+        router.push('/dashboard');
+        router.refresh(); // Force refresh to ensure proper auth state
+      }, 1000);
+      
     } catch (err) {
       console.error('Sign in error:', err);
       setError('An unexpected error occurred');

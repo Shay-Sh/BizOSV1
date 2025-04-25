@@ -2,7 +2,8 @@
 
 import { useAuth } from '@/lib/supabase/auth-context';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { Header } from '@/app/components/Header';
 
 export default function DashboardLayout({
   children,
@@ -11,15 +12,17 @@ export default function DashboardLayout({
 }) {
   const { user, isLoading } = useAuth();
   const router = useRouter();
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    setIsClient(true);
     if (!isLoading && !user) {
       router.push('/sign-in');
     }
   }, [isLoading, user, router]);
 
   // Show loading state while checking authentication
-  if (isLoading) {
+  if (isLoading || !isClient) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -30,5 +33,16 @@ export default function DashboardLayout({
     );
   }
 
-  return user ? children : null;
+  if (!user) {
+    return null; // Don't render anything if not authenticated
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Header />
+      <main className="flex-grow">
+        {children}
+      </main>
+    </div>
+  );
 } 
