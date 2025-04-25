@@ -12,6 +12,21 @@ BizOS is a comprehensive AI agent platform that enables users to create, customi
 - **Billing**: Stripe Integration
 - **Deployment**: Vercel
 
+## Deployment
+
+The application is deployed on Vercel with Supabase integration:
+
+- **Production URL**: [https://biz-osv-1.vercel.app](https://biz-osv-1.vercel.app)
+- **Database**: Supabase PostgreSQL
+- **CI/CD**: Automatic deployments from GitHub
+
+### Deployment Instructions
+
+1. Push changes to the GitHub repository
+2. Vercel automatically builds and deploys the application
+3. Environment variables are managed in the Vercel dashboard
+4. Supabase connection is established via Vercel integration
+
 ## Getting Started
 
 ### Prerequisites
@@ -128,10 +143,6 @@ See the `supabase/migrations` directory for the complete schema.
 3. Write tests if applicable
 4. Submit a pull request
 5. After review, merge to main
-
-## Deployment
-
-The application is deployed on Vercel with Supabase for the backend.
 
 ## Contributing
 
