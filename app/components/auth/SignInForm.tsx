@@ -30,11 +30,9 @@ export default function SignInForm() {
       // Successful sign-in
       console.log('Sign-in successful, redirecting to dashboard...');
       
-      // Add a small delay to ensure the auth state is updated in context
-      setTimeout(() => {
-        router.push('/dashboard');
-        router.refresh(); // Force refresh to ensure proper auth state
-      }, 1000);
+      // Replace the current history entry with the dashboard page
+      // This avoids issues with the back button and navigation
+      window.location.href = '/dashboard';
       
     } catch (err) {
       console.error('Sign in error:', err);

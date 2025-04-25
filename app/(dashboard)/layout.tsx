@@ -16,8 +16,14 @@ export default function DashboardLayout({
 
   useEffect(() => {
     setIsClient(true);
-    if (!isLoading && !user) {
-      router.push('/sign-in');
+    
+    // Check if we're on the client side
+    if (typeof window !== 'undefined') {
+      if (!isLoading && !user) {
+        console.log('No user detected in dashboard layout, redirecting to sign-in');
+        // Use window.location for a hard redirect that resets authentication state
+        window.location.href = '/sign-in';
+      }
     }
   }, [isLoading, user, router]);
 
@@ -34,7 +40,19 @@ export default function DashboardLayout({
   }
 
   if (!user) {
-    return null; // Don't render anything if not authenticated
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600 mb-4">You need to be signed in to access this page</p>
+          <button 
+            onClick={() => window.location.href = '/sign-in'} 
+            className="px-4 py-2 bg-primary text-white rounded-md"
+          >
+            Go to Sign In
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
