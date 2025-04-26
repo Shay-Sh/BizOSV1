@@ -6,6 +6,11 @@ import SideNav from '@/components/ui/SideNav';
 import TopNav from '@/components/ui/TopNav';
 import { Home, User, Settings, FileText, BarChart3, MessageSquare, Grid } from 'lucide-react';
 
+// Helper function to transform Lucide icons to match the expected IconType
+const iconComponent = (Icon: React.ElementType) => (
+  <Icon className="h-5 w-5" />
+);
+
 export default function NavigationExample() {
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
   const router = useRouter();
@@ -22,34 +27,34 @@ export default function NavigationExample() {
     {
       href: '/examples/navigation-example',
       label: 'Dashboard',
-      icon: Home,
+      icon: () => iconComponent(Home),
     },
     {
       href: '/examples/navigation-example/users',
       label: 'Users',
-      icon: User,
+      icon: () => iconComponent(User),
       badge: '5'
     },
     {
       href: '/examples/navigation-example/reports',
       label: 'Reports',
-      icon: FileText,
+      icon: () => iconComponent(FileText),
     },
     {
       href: '/examples/navigation-example/analytics',
       label: 'Analytics',
-      icon: BarChart3,
+      icon: () => iconComponent(BarChart3),
     },
     {
       href: '/examples/navigation-example/messages',
       label: 'Messages',
-      icon: MessageSquare,
+      icon: () => iconComponent(MessageSquare),
       badge: '3'
     },
     {
       href: '/examples/navigation-example/apps',
       label: 'Apps',
-      icon: Grid,
+      icon: () => iconComponent(Grid),
     }
   ];
   
