@@ -22,47 +22,52 @@ import {
   MdWorkspaces
 } from 'react-icons/md';
 
+// Helper function to transform react-icons to match the expected IconType
+const iconComponent = (Icon: React.ComponentType<any>) => (
+  <Icon className="h-5 w-5" />
+);
+
 // Define navigation items for sidebar
 const navigationItems: NavItem[] = [
   {
     href: '/app',
     label: 'Home',
-    icon: MdDashboard
+    icon: () => iconComponent(MdDashboard)
   },
   {
     href: '/app/dashboard',
     label: 'Dashboard',
-    icon: MdInsights
+    icon: () => iconComponent(MdInsights)
   },
   {
     href: '/app/agents',
     label: 'Agents',
-    icon: MdPeople
+    icon: () => iconComponent(MdPeople)
   },
   {
     href: '/app/analytics',
     label: 'Analytics',
-    icon: MdInsights
+    icon: () => iconComponent(MdInsights)
   },
   {
     href: '/app/workflows',
     label: 'Workflows',
-    icon: MdGridView
+    icon: () => iconComponent(MdGridView)
   },
   {
     href: '/app/messages',
     label: 'Messages',
-    icon: MdMessage
+    icon: () => iconComponent(MdMessage)
   },
   {
     href: '/app/calendar',
     label: 'Calendar',
-    icon: MdCalendarToday
+    icon: () => iconComponent(MdCalendarToday)
   },
   {
     href: '/app/settings',
     label: 'Settings',
-    icon: MdSettings
+    icon: () => iconComponent(MdSettings)
   }
 ];
 
@@ -135,15 +140,11 @@ const AppLayout = ({
       
       {/* Top Bar */}
       <TopNav
-        sidebarCollapsed={sidebarCollapsed}
-        onToggleSidebar={toggleSidebar}
-        onProfileClick={handleProfileClick}
-        onNotificationsClick={handleNotificationsClick}
-        onCreditClick={handleCreditClick}
-        onSignOutClick={handleSignOut}
+        onSearch={(query) => console.log('Search:', query)}
+        notificationCount={2}
         userInfo={userInfo}
-        unreadNotificationsCount={2}
-        creditBalance={creditBalance}
+        onSettings={handleProfileClick}
+        onSignOut={handleSignOut}
       />
       
       {/* Main Content */}
