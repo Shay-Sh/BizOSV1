@@ -1,8 +1,8 @@
 "use client"
 
 import React, { useState } from 'react'
-import { CreditPurchaseCard } from '@/components/ui/credit-purchase-card'
-import { CreditSummaryCard } from '@/components/ui/credit-summary-card'
+import { CreditPurchaseCard, CreditPackage } from '@/components/ui/credit-purchase-card'
+import { CreditSummaryCard, CreditUsage } from '@/components/ui/credit-summary-card'
 import { Bot, MessageSquare, RefreshCcw, Sparkles } from 'lucide-react'
 
 export default function CreditSystemPage() {
@@ -14,6 +14,13 @@ export default function CreditSystemPage() {
     { feature: "Agent Executions", amount: 125, icon: <Bot className="h-4 w-4 mr-2 text-muted-foreground" /> },
     { feature: "Chat Conversations", amount: 75, icon: <MessageSquare className="h-4 w-4 mr-2 text-muted-foreground" /> },
     { feature: "Knowledge Base Queries", amount: 50, icon: <Sparkles className="h-4 w-4 mr-2 text-muted-foreground" /> },
+  ]
+
+  // Sample usage history for the CreditSummaryCard
+  const usageHistory: CreditUsage[] = [
+    { id: '1', date: '2023-05-15', action: 'Agent Execution', amount: 25, balance: 750 },
+    { id: '2', date: '2023-05-14', action: 'Chat Conversation', amount: 15, balance: 775 },
+    { id: '3', date: '2023-05-13', action: 'Knowledge Base Query', amount: 10, balance: 790 },
   ]
   
   // Credit packages
@@ -60,14 +67,11 @@ export default function CreditSystemPage() {
     }
   ]
 
-  const handlePurchase = (packageId: string) => {
-    const selectedPackage = packages.find(pkg => pkg.id === packageId)
-    if (selectedPackage) {
-      setCredits(current => current + selectedPackage.credits)
-      setShowPurchaseForm(false)
-      // In a real app, you would handle payment processing here
-      alert(`Successfully purchased ${selectedPackage.credits.toLocaleString()} credits for $${selectedPackage.price}`)
-    }
+  const handlePurchase = (selectedPackage: CreditPackage) => {
+    setCredits(current => current + selectedPackage.credits)
+    setShowPurchaseForm(false)
+    // In a real app, you would handle payment processing here
+    alert(`Successfully purchased ${selectedPackage.credits.toLocaleString()} credits for $${selectedPackage.price}`)
   }
   
   return (
@@ -77,11 +81,9 @@ export default function CreditSystemPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div>
           <CreditSummaryCard 
-            balance={credits}
-            lastUpdated="10 minutes ago"
-            recentUsage={recentUsage}
-            onViewDetails={() => alert("Navigate to detailed usage dashboard")}
-            onPurchase={() => setShowPurchaseForm(true)}
+            credits={credits}
+            usageHistory={usageHistory}
+            onPurchaseClick={() => setShowPurchaseForm(true)}
           />
           
           <div className="mt-8 bg-muted/50 rounded-lg p-6">
