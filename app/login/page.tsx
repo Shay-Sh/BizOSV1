@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/components/auth/AuthContext';
+import { useAuth } from '@/lib/supabase/auth-context';
 import { GlassPanel } from '@/components/GlassPanel';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
 
@@ -14,7 +14,7 @@ export default function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const router = useRouter();
-  const { login } = useAuth();
+  const { signIn } = useAuth();
 
   const validateForm = () => {
     const newErrors = { email: '', password: '' };
@@ -48,7 +48,8 @@ export default function LoginPage() {
     setIsSubmitting(true);
     
     try {
-      await login(email, password);
+      const { error } = await signIn(email, password);
+      if (error) throw error;
       router.push('/app');
     } catch (error) {
       console.error('Login failed:', error);
