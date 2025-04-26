@@ -47,6 +47,34 @@ This document outlines ideas and considerations for the BizOS dashboard user exp
 - **Billing & Subscription**: Plan details, usage, payment history
 - **Integrations**: Connected services and data sources
 
+## Expanded Platform Sections (From bizos_pages.md)
+
+### Approval Center
+- **Approval Queue**: Prioritized list of pending approvals
+- **Request Details**: Contextual information for decision-making
+- **Action Panel**: Clear decision controls with comments
+- **History Log**: Record of past decisions and outcomes
+- **Policy Management**: Rules for automatic approvals and escalations
+
+### Knowledge Base
+- **Knowledge Base List**: Organized document collections
+- **Document Management**: Upload and processing interface
+- **Content Viewer**: Preview and annotation tools
+- **Agent Assignment**: Connect documents to relevant agents
+- **Usage Analytics**: Document utilization metrics
+
+### Credentials Management
+- **Credential List**: Secure storage of service credentials
+- **Access Controls**: Fine-grained permission system
+- **OAuth Flow**: Integration with authentication providers
+- **Security Settings**: Encryption and rotation policies
+
+### Team Management
+- **Organization Structure**: Visual hierarchy representation
+- **User Directory**: Member management interface
+- **Role Assignment**: Permission and access controls
+- **Activity Monitoring**: Team usage tracking
+
 ## UI Components & Patterns
 
 ### Navigation
@@ -56,16 +84,16 @@ This document outlines ideas and considerations for the BizOS dashboard user exp
 - **Context Menus**: Right-click actions for common operations
 
 ### Data Visualization
-- **Cards**: Key metrics in easily scannable format with frosted glass effect
-- **Charts**: Usage trends, performance metrics, comparison data with subtle transparency
-- **Tables**: Detailed data with sorting/filtering capabilities and blurred backgrounds
-- **Status Indicators**: Clear visual cues for agent status with glowing highlights
+- **Cards**: Key metrics in easily scannable format with clean borders and subtle shadows
+- **Charts**: Usage trends, performance metrics, comparison data with semantic colors
+- **Tables**: Detailed data with sorting/filtering capabilities
+- **Status Indicators**: Clear visual cues for agent status with appropriate colors
 
 ### Interaction Patterns
 - **Progressive Disclosure**: Reveal complexity as needed with elegant transitions
-- **Guided Workflows**: Step-by-step processes with layered glass panels
-- **Inline Editing**: Direct manipulation of data with focus states using backdrop blur
-- **Contextual Help**: Tooltips and guides using translucent overlays
+- **Guided Workflows**: Step-by-step processes with clear navigation
+- **Inline Editing**: Direct manipulation of data with focus states
+- **Contextual Help**: Tooltips and guides for better user understanding
 
 ## Layout Considerations
 
@@ -90,116 +118,111 @@ This document outlines ideas and considerations for the BizOS dashboard user exp
 - **Clean & Minimal**: Focus on content, reduce visual noise
 - **Consistent Patterns**: Predictable interactions across the platform
 - **Purposeful Animation**: Reinforce relationships and changes
-- **Layered Depth**: Create spatial relationships through translucent elements
+- **Structured Layout**: Create spatial relationships through clear hierarchy
 
-### Glassmorphism Style Elements
-- **Frosted Glass Effect**: Apply backdrop-filter: blur(10px) to create translucent surfaces
-- **Subtle Borders**: Use 1px light borders (rgba(255, 255, 255, 0.2)) on elements
-- **Depth Layering**: Stack translucent elements to create visual hierarchy
-- **Gradient Backgrounds**: Use colorful gradients behind frosted glass UI elements
-- **Light Reflections**: Add subtle highlights to top edges of glass elements
-- **Soft Shadows**: Implement delicate shadows for depth without heaviness
-- **Transparency**: Use rgba colors with 70-90% opacity for primary containers
-- **Glass Cards**: Present information in frosted panels with rounded corners
-- **Vibrant Accents**: Use saturated colors that show through the frosted surfaces
+### New Design System Elements
+- **CSS Variables**: Use HSL-based CSS variables for flexible theming
+- **Light/Dark Mode**: Robust theme switching with proper color contrast
+- **Component-Based Design**: Build from reusable, consistent components
+- **Semantic Colors**: Use colors to convey meaning across the interface
+- **Accessible Contrast**: Ensure all text maintains WCAG AA compliance
+- **Rounded Corners**: Consistent border radius for UI elements
+- **Subtle Shadows**: Use shadows to create depth without overwhelming visuals
+- **Clean Cards**: Present information in neatly bordered panel components
 
 ### Color Usage
-- **Base Palette**: Gradient backgrounds using harmonious colors (blues, purples, teals)
-- **Functional Colors**: Status indicators, alerts, categories with glow effects
-- **Transparency Levels**: Consistent opacity values for different UI layers
-- **Light Effects**: Subtle inner glow on interactive elements
-- **Accessibility**: Maintain WCAG 2.1 AA compliance despite transparency
+- **Base Palette**: Defined through CSS variables for light/dark modes
+- **Functional Colors**: Status indicators, alerts, categories
+- **Semantic Colors**: Use colors consistently for success, warning, error, info
+- **Theming Support**: Allow customization while maintaining accessibility
+- **Accessibility**: Maintain WCAG 2.1 AA compliance in all themes
 
 ### Typography
 - **Hierarchy**: Clear distinction between headings, body text, metadata
-- **Readability**: Ensure sufficient contrast against translucent backgrounds
+- **Readability**: Ensure sufficient contrast and appropriate sizes
 - **Consistency**: Limited font variations for cohesive experience
-- **Weight Balance**: Use font weight to maintain readability on blurred backgrounds
+- **Weight Balance**: Use font weight to maintain readability
 
 ## Implementation Considerations
 
 ### Component Library
-- **Tailwind CSS**: Utilize for consistent styling with custom glassmorphism utilities
-- **Custom Components**: Build reusable glass-effect components
-- **Design System**: Document specific CSS properties for consistent glass effects
+- **Tailwind CSS**: Utilize for consistent styling with CSS variable integration
+- **Custom Components**: Build reusable components with proper theming support
+- **Design System**: Document components and their usage patterns
 
-### Glassmorphism Technical Implementation
+### New Design System Technical Implementation
 ```css
-/* Example Tailwind extension for glassmorphism */
-module.exports = {
-  theme: {
-    extend: {
-      backdropBlur: {
-        'xs': '2px',
-        'sm': '4px',
-        'md': '10px',
-        'lg': '15px',
-        'xl': '20px',
-      },
-      boxShadow: {
-        'glass': '0 4px 30px rgba(0, 0, 0, 0.1)',
-        'glass-inner': 'inset 0 1px 1px rgba(255, 255, 255, 0.1)',
-      },
-      borderColor: {
-        'glass': 'rgba(255, 255, 255, 0.2)',
-      },
-      backgroundColor: {
-        'glass': 'rgba(255, 255, 255, 0.1)',
-        'glass-dark': 'rgba(0, 0, 0, 0.2)',
-      },
-      gradientColorStops: {
-        'blue-glass': '#4158D0',
-        'purple-glass': '#C850C0',
-        'teal-glass': '#4DA0B0',
-        'rose-glass': '#FFAFBD',
-      },
-    }
-  },
-  plugins: [
-    function({ addUtilities }) {
-      const newUtilities = {
-        '.glass': {
-          backgroundColor: 'rgba(255, 255, 255, 0.15)',
-          backdropFilter: 'blur(10px)',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
-          borderRadius: '0.5rem',
-          boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
-        },
-        '.glass-dark': {
-          backgroundColor: 'rgba(17, 25, 40, 0.75)',
-          backdropFilter: 'blur(10px)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          borderRadius: '0.5rem',
-          boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
-        },
-      }
-      addUtilities(newUtilities)
-    }
-  ]
+/* CSS variables for theming */
+:root {
+  /* Base Colors */
+  --background: 0 0% 100%;
+  --foreground: 240 10% 3.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 240 10% 3.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 240 10% 3.9%;
+  --primary: 240 5.9% 10%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 240 4.8% 95.9%;
+  --secondary-foreground: 240 5.9% 10%;
+  --muted: 240 4.8% 95.9%;
+  --muted-foreground: 240 3.8% 46.1%;
+  --accent: 240 4.8% 95.9%;
+  --accent-foreground: 240 5.9% 10%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 240 5.9% 90%;
+  --input: 240 5.9% 90%;
+  --ring: 240 5% 64.9%;
+  --radius: 0.5rem;
+}
+
+.dark {
+  --background: 240 10% 3.9%;
+  --foreground: 0 0% 98%;
+  --card: 240 10% 3.9%;
+  --card-foreground: 0 0% 98%;
+  --popover: 240 10% 3.9%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 0 0% 98%;
+  --primary-foreground: 240 5.9% 10%;
+  --secondary: 240 3.7% 15.9%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 240 3.7% 15.9%;
+  --muted-foreground: 240 5% 64.9%;
+  --accent: 240 3.7% 15.9%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 240 3.7% 15.9%;
+  --input: 240 3.7% 15.9%;
+  --ring: 240 4.9% 83.9%;
 }
 ```
 
 ### Performance
-- **Backdrop Filter Optimization**: Limit the number of elements with backdrop-filter
-- **GPU Acceleration**: Use transform: translateZ(0) for hardware acceleration
+- **Component Optimization**: Limit unnecessary re-renders with proper memoization
+- **Image Optimization**: Next.js Image component for proper asset delivery
+- **Code Splitting**: Load only what's needed for each page
 - **Lazy Loading**: Defer loading of non-critical elements
 - **Virtualization**: Efficient rendering of large data sets
-- **Optimistic UI**: Immediate feedback with background synchronization
 
 ### Accessibility
-- **Contrast Checking**: Ensure text maintains sufficient contrast against translucent backgrounds
+- **Contrast Checking**: Ensure text maintains sufficient contrast
 - **Keyboard Navigation**: Full functionality without mouse dependence
 - **Screen Reader Support**: Semantic HTML and ARIA attributes
-- **Focus Management**: Enhanced visual indicators of interactive elements with glow effects
+- **Focus Management**: Enhanced visual indicators of interactive elements
 
 ## Implementation Status
 
 ### Successfully Implemented
-- ✅ Glassmorphism styling with custom tailored components
-- ✅ GlassPanel component with proper backdrop-blur and transparency effects
-- ✅ DashboardGrid for responsive layout management
+- ✅ New design system with CSS variables for theming
+- ✅ Theme provider with light/dark mode support
+- ✅ Card component with proper styling
+- ✅ Clean, modern UI for dashboard components
+- ✅ Icon system with Lucide React
 - ✅ Main app structure with primary navigation routes
-- ✅ Calendar page with integrated layout and responsive design
+- ✅ Theme toggle component in top navigation
 - ✅ Authentication system with Supabase integration
 - ✅ Application page structure and route organization
 - ✅ Navigation system with active state indicators
@@ -209,24 +232,63 @@ module.exports = {
 - ✅ Production deployment on Vercel
 
 ### Partially Implemented
-- ⚠️ Search and filtering components (basic UI implemented, functionality pending)
-- ⚠️ Interactive data visualizations (placeholder layouts created, real charts pending)
-- ⚠️ User profile and settings pages (routes created, detailed UI pending)
+- ⚠️ Advanced search and filtering components
+- ⚠️ Interactive data visualizations with chart library
+- ⚠️ Advanced form controls with validation
+
+### Not Yet Implemented (From bizos_pages.md)
+- ❌ Agent Builder workflow editor
+- ❌ Approval Center for human-in-the-loop decisions
+- ❌ Knowledge Base management system
+- ❌ Credentials management interface
+- ❌ Team management and organization structure
+- ❌ Billing and subscription management
+- ❌ Help and documentation center
+
+## Design Considerations for New Pages
+
+### Agent Builder
+- Use a split-panel interface with node palette on the left
+- Implement a zoomable canvas with drag-and-drop interactions
+- Provide real-time validation with visual indicators
+- Include a preview/test panel for immediate feedback
+
+### Approval Center
+- Create a priority-based queue with clear status indicators
+- Design detailed request cards with expandable sections
+- Implement one-click approval/rejection with comment option
+- Provide history view with filtering capabilities
+
+### Knowledge Base
+- Design document cards with preview capability
+- Create an intuitive upload and processing interface
+- Implement search with highlighted results
+- Design agent assignment interface with drag-and-drop
+
+### Credentials Management
+- Create masked credential displays for security
+- Design OAuth flow wizards with clear steps
+- Implement permission matrix visualizations
+- Use security status indicators with recommendations
 
 ## Next Steps
 
-1. **Add Data Visualization**: Integrate Recharts or Chart.js to convert placeholder charts into functional visualizations
+1. **Enhance Data Visualization**: Continue integrating charts with proper theming support
 2. **Connect to Real Data**: Connect UI components to Supabase data sources
-3. **Implement Pending Features**: Complete search functionality and filtering components
-4. **Optimize Performance**: Apply performance optimizations for production environment
-5. **Enhance User Experience**: Add animations and transitions for smoother interactions
-6. **Implement User Settings**: Complete user profile and preference management
-7. **Expand Testing**: Conduct accessibility and cross-browser testing
+3. **Complete Search Components**: Finalize the implementation of search and filtering
+4. **Design New Page Layouts**: Create detailed wireframes for Agent Builder, Approval Center, and Knowledge Base pages
+5. **Develop Core Components**: Build reusable components needed for new pages (workflow editor, approval cards, document viewer)
+6. **Update Database Schema**: Implement migrations for tables supporting new functionality
+7. **Enhance User Experience**: Continue refining animations and transitions
+8. **Complete User Settings**: Finalize user profile and preference management components
 
 ## References & Inspiration
 
 - Vercel dashboard for developer experience
 - Stripe dashboard for clarity and data visualization
 - Linear app for interaction design and keyboard shortcuts
-- Apple macOS Big Sur and iOS design for glassmorphism implementation
-- Microsoft Fluent Design System for depth and transparency guidance 
+- GitHub Primer design system for component organization
+- Radix UI for accessible component patterns
+- shadcn/ui for elegant component implementations
+- Tailwind CSS for utility-first styling approach
+- Next.js app directory for routing structure 

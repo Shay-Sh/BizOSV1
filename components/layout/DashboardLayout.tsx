@@ -5,6 +5,7 @@ import { cn } from '@/utils/classnames';
 import SideNav, { NavItem } from '@/components/ui/SideNav';
 import TopNav from '@/components/ui/TopNav';
 import { useAuth } from '@/lib/supabase/auth-context';
+import { useRouter } from 'next/navigation';
 
 // Import icons
 import {
@@ -14,7 +15,11 @@ import {
   MdInsights,
   MdGridView,
   MdMessage,
-  MdCalendarToday
+  MdCalendarToday,
+  MdApproval,
+  MdFolderShared,
+  MdChat,
+  MdWorkspaces
 } from 'react-icons/md';
 
 // Define navigation items for sidebar
@@ -25,15 +30,14 @@ const navigationItems: NavItem[] = [
     icon: MdDashboard
   },
   {
-    href: '/app/agents',
-    label: 'Agents',
-    icon: MdPeople,
-    badge: 'New'
+    href: '/app/dashboard',
+    label: 'Dashboard',
+    icon: MdInsights
   },
   {
-    href: '/app/workflows',
-    label: 'Workflows',
-    icon: MdGridView
+    href: '/app/agents',
+    label: 'Agents',
+    icon: MdPeople
   },
   {
     href: '/app/analytics',
@@ -41,10 +45,14 @@ const navigationItems: NavItem[] = [
     icon: MdInsights
   },
   {
+    href: '/app/workflows',
+    label: 'Workflows',
+    icon: MdGridView
+  },
+  {
     href: '/app/messages',
     label: 'Messages',
-    icon: MdMessage,
-    badge: 3
+    icon: MdMessage
   },
   {
     href: '/app/calendar',
@@ -72,10 +80,14 @@ const AppLayout = ({
   pageTitle = 'App'
 }: AppLayoutProps) => {
   // Get user data from auth context
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
+  const router = useRouter();
   
   // State for sidebar collapsed status
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  
+  // Sample credit balance - in a real app, you would fetch this from your backend
+  const [creditBalance, setCreditBalance] = useState(750);
   
   // Toggle sidebar collapsed state
   const toggleSidebar = () => {
@@ -84,12 +96,24 @@ const AppLayout = ({
   
   // Handle profile click
   const handleProfileClick = () => {
-    console.log('Profile clicked');
+    router.push('/app/settings/profile');
   };
   
   // Handle notifications click
   const handleNotificationsClick = () => {
+    // Navigate to notifications page or open notifications panel
     console.log('Notifications clicked');
+  };
+  
+  // Handle credit click
+  const handleCreditClick = () => {
+    router.push('/app/settings/credits');
+  };
+  
+  // Handle sign out click
+  const handleSignOut = async () => {
+    await signOut();
+    // Redirect to sign in page will be handled by the auth context
   };
   
   // User info from auth
@@ -115,8 +139,11 @@ const AppLayout = ({
         onToggleSidebar={toggleSidebar}
         onProfileClick={handleProfileClick}
         onNotificationsClick={handleNotificationsClick}
+        onCreditClick={handleCreditClick}
+        onSignOutClick={handleSignOut}
         userInfo={userInfo}
         unreadNotificationsCount={2}
+        creditBalance={creditBalance}
       />
       
       {/* Main Content */}

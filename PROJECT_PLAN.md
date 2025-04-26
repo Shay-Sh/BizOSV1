@@ -25,39 +25,62 @@ BizOS (Business AI Operating System) is a comprehensive platform that enables us
 
 ### Agent Management
 - ✅ Agents List (`app/(app)/agents/`)
-- ⬜ Agent Gallery/Marketplace
-- ⬜ Agent Builder
-- ⬜ Agent Detail View
-- ⬜ Templates Library
+- ⬜ Agents Marketplace (`app/(app)/marketplace/`)
+- ⬜ My Agents (`app/(app)/agents/my/`)
+- ⬜ Agent Builder (`app/(app)/agents/builder/`)
+- ⬜ Agent Detail View (`app/(app)/agents/[id]`)
+- ⬜ Templates Library (`app/(app)/agents/templates/`)
 
 ### Analytics
 - ✅ Analytics Dashboard (`app/(app)/analytics/`)
-- ⬜ Agent Performance Reports
-- ⬜ Usage Trends
-- ⬜ Cost Analysis
+- ⬜ Agent Performance Reports (`app/(app)/analytics/performance/`)
+- ⬜ Usage Trends (`app/(app)/analytics/trends/`)
+- ⬜ Cost Analysis (`app/(app)/analytics/costs/`)
 
 ### Workflow Management
 - ✅ Workflows Dashboard (`app/(app)/workflows/`)
-- ⬜ Workflow Editor
-- ⬜ Workflow Detail
-- ⬜ Execution Logs
+- ⬜ Workflow Editor (`app/(app)/workflows/editor/`)
+- ⬜ Workflow Detail (`app/(app)/workflows/[id]`)
+- ⬜ Execution Logs (`app/(app)/workflows/logs/`)
 
 ### Communication
 - ✅ Messages (`app/(app)/messages/`)
 - ✅ Calendar (`app/(app)/calendar/`)
+- ⬜ Conversations (`app/(app)/conversations/`)
+
+### Knowledge Base
+- ⬜ Knowledge Dashboard (`app/(app)/knowledge/`)
+- ⬜ Document Management (`app/(app)/knowledge/documents/`)
+- ⬜ Content Viewer (`app/(app)/knowledge/viewer/[id]`)
+
+### Human-in-the-Loop
+- ⬜ Approval Center (`app/(app)/approvals/`)
+- ⬜ Decision History (`app/(app)/approvals/history/`)
+- ⬜ Policy Management (`app/(app)/approvals/policies/`)
+
+### Security & Credentials
+- ⬜ Credentials Dashboard (`app/(app)/credentials/`)
+- ⬜ OAuth Connections (`app/(app)/credentials/oauth/`)
+- ⬜ Access Management (`app/(app)/credentials/access/`)
 
 ### Settings & Administration
 - ✅ Settings (`app/(app)/settings/`)
-- ⬜ User Profile
-- ⬜ Team Management
-- ⬜ Billing & Subscription
-- ⬜ Integrations
-- ⬜ API Keys
+- ⬜ User Profile (`app/(app)/settings/profile/`)
+- ⬜ Team Management (`app/(app)/team/`)
+- ⬜ Billing & Subscription (`app/(app)/billing/`)
+- ⬜ Integrations (`app/(app)/settings/integrations/`)
+- ⬜ API Keys (`app/(app)/settings/api-keys/`)
+
+### Help & Support
+- ⬜ Help Center (`app/(app)/help/`)
+- ⬜ Documentation (`app/(app)/help/docs/`)
+- ⬜ Tutorials (`app/(app)/help/tutorials/`)
+- ⬜ Support (`app/(app)/help/support/`)
 
 ### Super Admin (Future)
-- ⬜ Platform Management
-- ⬜ User Management
-- ⬜ System Monitoring
+- ⬜ Platform Management (`app/(admin)/platform/`)
+- ⬜ User Management (`app/(admin)/users/`)
+- ⬜ System Monitoring (`app/(admin)/monitoring/`)
 
 ## Development Phases
 
@@ -132,12 +155,20 @@ BizOS (Business AI Operating System) is a comprehensive platform that enables us
   - [ ] Rich text support
   - [ ] Conversation management
 
-### Phase 3: Enterprise Features (2 weeks)
-- [ ] Organization & Team Management
-  - [ ] Organization creation and settings
-  - [ ] Team management
-  - [ ] Role-based access control
-  - [ ] Invitation system
+### Phase 3: Human-in-the-Loop & Knowledge Base (2 weeks)
+- [ ] Approval Center
+  - [ ] Approval queue interface
+  - [ ] Request detail views
+  - [ ] Decision actions
+  - [ ] History logging
+  - [ ] Policy management
+
+- [ ] Knowledge Base System
+  - [ ] Document management
+  - [ ] Content viewer
+  - [ ] Agent assignment
+  - [ ] Search functionality
+  - [ ] Usage analytics
 
 - [ ] Credential Management
   - [ ] Secure credential storage
@@ -145,19 +176,13 @@ BizOS (Business AI Operating System) is a comprehensive platform that enables us
   - [ ] Credential access control
   - [ ] Service-specific validations
 
-- [ ] Human-in-the-Loop
-  - [ ] Approval workflows
-  - [ ] Notification system
-  - [ ] Decision tracking
-  - [ ] Audit logging
+- [ ] Team Management
+  - [ ] Organization structure
+  - [ ] User directory
+  - [ ] Role assignment
+  - [ ] Activity monitoring
 
-- [ ] Billing & Subscription
-  - [ ] Stripe integration
-  - [ ] Subscription plans
-  - [ ] Usage tracking
-  - [ ] Invoice generation
-
-### Phase 4: Marketplace & Polish (2 weeks)
+### Phase 4: Marketplace & Analytics (2 weeks)
 - [ ] Agent Marketplace
   - [ ] Agent store UI
   - [ ] Agent browsing and filtering
@@ -170,17 +195,30 @@ BizOS (Business AI Operating System) is a comprehensive platform that enables us
   - [ ] User engagement analytics
   - [ ] Dashboard and reporting
 
+- [ ] Billing & Subscription
+  - [ ] Stripe integration
+  - [ ] Subscription management
+  - [ ] Usage tracking
+  - [ ] Invoice history
+
+### Phase 5: Help & Polish (1 week)
+- [ ] Help & Documentation
+  - [ ] Knowledge center
+  - [ ] Interactive guides
+  - [ ] Support access
+  - [ ] Resource library
+
 - [ ] Performance Optimizations
   - [ ] Frontend optimizations
   - [ ] Database query optimization
   - [ ] Caching implementation
   - [ ] Load testing and scaling
 
-- [ ] Documentation & Onboarding
-  - [ ] User documentation
-  - [ ] API documentation
-  - [ ] Onboarding flows
-  - [ ] Tutorial and examples
+- [ ] Onboarding Flows
+  - [ ] User onboarding
+  - [ ] Agent creation tutorials
+  - [ ] Getting started guides
+  - [ ] Feature tours
 
 ## Timeline Overview
 - **Phase 0**: Week 1 ✅
@@ -189,11 +227,101 @@ BizOS (Business AI Operating System) is a comprehensive platform that enables us
   - Authentication ✅
   - Database Setup and Agent Builder (In Progress)
 - **Phase 2**: Weeks 4-5
+  - Workflow Builder
+  - Node Implementation
+  - Execution Engine
 - **Phase 3**: Weeks 6-7
+  - Approval Center
+  - Knowledge Base
+  - Credentials
+  - Team Management
 - **Phase 4**: Weeks 8-9
+  - Marketplace
+  - Analytics
+  - Billing
+- **Phase 5**: Week 10
+  - Help Center
+  - Optimizations
+  - Onboarding
+
+## Database Schema Updates
+To support the new pages outlined in bizos_pages.md, the following database table structure updates will be needed:
+
+```sql
+-- Knowledge Base tables
+CREATE TABLE knowledge_bases (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name TEXT NOT NULL,
+  description TEXT,
+  organization_id UUID REFERENCES organizations,
+  created_by UUID REFERENCES auth.users NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE knowledge_documents (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  knowledge_base_id UUID REFERENCES knowledge_bases NOT NULL,
+  title TEXT NOT NULL,
+  content TEXT,
+  file_url TEXT,
+  file_type TEXT,
+  status TEXT DEFAULT 'processing',
+  metadata JSONB DEFAULT '{}',
+  created_by UUID REFERENCES auth.users NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Approval Center tables
+CREATE TABLE approval_requests (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  title TEXT NOT NULL,
+  description TEXT,
+  workflow_execution_id UUID,
+  status TEXT NOT NULL DEFAULT 'pending',
+  priority TEXT DEFAULT 'normal',
+  due_date TIMESTAMP WITH TIME ZONE,
+  requested_by UUID REFERENCES auth.users NOT NULL,
+  assigned_to UUID REFERENCES auth.users,
+  context_data JSONB NOT NULL DEFAULT '{}',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE approval_decisions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  approval_request_id UUID REFERENCES approval_requests NOT NULL,
+  decision TEXT NOT NULL,
+  comment TEXT,
+  decided_by UUID REFERENCES auth.users NOT NULL,
+  decided_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Conversation tables
+CREATE TABLE conversations (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  title TEXT,
+  agent_id UUID,
+  user_id UUID REFERENCES auth.users NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE messages (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  conversation_id UUID REFERENCES conversations NOT NULL,
+  content TEXT NOT NULL,
+  type TEXT NOT NULL DEFAULT 'text',
+  sender_type TEXT NOT NULL,
+  sender_id TEXT NOT NULL,
+  metadata JSONB DEFAULT '{}',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
 
 ## Deployment Targets
 - Development environment: Week 1 ✅
 - Staging environment: Week 5
 - Production beta: Week 7
-- Production release: Week 9 
+- Production release: Week 10 

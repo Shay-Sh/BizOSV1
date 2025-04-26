@@ -6,6 +6,88 @@ const nextConfig = {
   eslint: {
     dirs: ['app', 'components', 'lib', 'types'],
   },
+  
+  // Add redirects for any direct routes to their proper app/(app) versions
+  async redirects() {
+    return [
+      // Redirect direct routes to their /app prefixed versions
+      {
+        source: '/agents',
+        destination: '/app/agents',
+        permanent: true,
+      },
+      {
+        source: '/agents/:path*',
+        destination: '/app/agents/:path*',
+        permanent: true,
+      },
+      {
+        source: '/workflows',
+        destination: '/app/workflows',
+        permanent: true,
+      },
+      {
+        source: '/workflows/:path*',
+        destination: '/app/workflows/:path*',
+        permanent: true,
+      },
+      {
+        source: '/analytics',
+        destination: '/app/analytics',
+        permanent: true,
+      },
+      {
+        source: '/conversations',
+        destination: '/app/conversations',
+        permanent: true,
+      },
+      {
+        source: '/messages',
+        destination: '/app/messages',
+        permanent: true,
+      },
+      {
+        source: '/knowledge',
+        destination: '/app/knowledge',
+        permanent: true,
+      },
+      {
+        source: '/knowledge/:path*',
+        destination: '/app/knowledge/:path*',
+        permanent: true,
+      },
+      {
+        source: '/approvals',
+        destination: '/app/approvals',
+        permanent: true,
+      },
+      {
+        source: '/calendar',
+        destination: '/app/calendar',
+        permanent: true,
+      },
+      {
+        source: '/settings',
+        destination: '/app/settings',
+        permanent: true,
+      },
+      {
+        source: '/settings/:path*',
+        destination: '/app/settings/:path*',
+        permanent: true,
+      },
+      {
+        source: '/workspace',
+        destination: '/app/workspace',
+        permanent: true,
+      },
+      {
+        source: '/dashboard',
+        destination: '/app',
+        permanent: true,
+      },
+    ]
+  }
 }
 
 module.exports = nextConfig 

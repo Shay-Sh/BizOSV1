@@ -41,6 +41,30 @@ export async function middleware(req: NextRequest) {
                            url.pathname.startsWith('/agents');
   const isAuthRoute = url.pathname.startsWith('/sign-in') || 
                       url.pathname.startsWith('/sign-up');
+  const isAppRoute = url.pathname.startsWith('/app');
+                      
+  // Handle app routes
+  if (isAppRoute) {
+    // If no session, redirect to sign-in
+    if (!session) {
+      url.pathname = '/sign-in';
+      return NextResponse.redirect(url);
+    }
+    
+    // Check if the path exists by checking if it's covered by our route structure
+    // This is a simple approach - you might need to enhance this based on your actual routes
+    const validPaths = ['/app', '/app/dashboard', '/app/agents', '/app/analytics', 
+                        '/app/workflows', '/app/messages', '/app/calendar', '/app/settings',
+                        '/app/settings/profile', '/app/settings/credits'];
+    
+    const isValidPath = validPaths.some(path => url.pathname === path || 
+                                               url.pathname.startsWith(path + '/'));
+    
+    if (!isValidPath) {
+      // Redirect to main app page if the path doesn't exist
+      return NextResponse.redirect(new URL('/app', req.url));
+    }
+  }
                       
   // Redirect logic based on auth state
   if (isProtectedRoute && !session) {
@@ -64,6 +88,7 @@ export const config = {
     // Protected routes that require authentication
     '/dashboard/:path*',
     '/agents/:path*',
+    '/app/:path*',
     // Auth routes that redirect to dashboard if already authenticated
     '/sign-in',
     '/sign-up',
