@@ -1,12 +1,6 @@
 'use client';
 
-import { Metadata } from 'next';
 import { useAuth } from '@/lib/supabase/auth-context';
-
-export const metadata: Metadata = {
-  title: 'Settings | BizOS',
-  description: 'Manage your account and application settings',
-};
 
 export default function SettingsPage() {
   const { signOut } = useAuth();
