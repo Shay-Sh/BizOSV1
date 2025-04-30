@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
 import { useState, useEffect } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { getBrowserSupabase } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -30,7 +30,6 @@ export default function ApiKeyForm() {
   const [isTesting, setIsTesting] = useState<Record<string, boolean>>({});
   
   const { toast } = useToast();
-  const supabase = createClientComponentClient();
   
   // Load existing API keys on component mount
   useEffect(() => {
@@ -42,6 +41,11 @@ export default function ApiKeyForm() {
     try {
       setIsLoading(true);
       
+      const supabase = getBrowserSupabase();
+      if (!supabase) {
+        throw new Error('Failed to initialize Supabase client');
+      }
+      
       const { data, error } = await supabase
         .from('llm_api_keys')
         .select('*')
@@ -51,7 +55,7 @@ export default function ApiKeyForm() {
         throw error;
       }
       
-      setApiKeys(data || []);
+      setApiKeys(data as ApiKey[] || []);
     } catch (error) {
       console.error('Error fetching API keys:', error);
       toast({
@@ -79,6 +83,11 @@ export default function ApiKeyForm() {
     
     try {
       setIsSubmitting(true);
+      
+      const supabase = getBrowserSupabase();
+      if (!supabase) {
+        throw new Error('Failed to initialize Supabase client');
+      }
       
       // Get the current user
       const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -123,7 +132,7 @@ export default function ApiKeyForm() {
       }
       
       // Update the UI
-      setApiKeys([data, ...apiKeys]);
+      setApiKeys([data as ApiKey, ...apiKeys]);
       setApiKey('');
       
       toast({
@@ -135,7 +144,7 @@ export default function ApiKeyForm() {
       console.error('Error adding API key:', error);
       toast({
         title: 'Error',
-        description: 'Failed to add API key',
+        description: error instanceof Error ? error.message : 'Failed to add API key',
         variant: 'destructive',
       });
     } finally {
@@ -146,6 +155,11 @@ export default function ApiKeyForm() {
   // Toggle the active status of an API key
   const toggleKeyStatus = async (id: string, currentStatus: boolean) => {
     try {
+      const supabase = getBrowserSupabase();
+      if (!supabase) {
+        throw new Error('Failed to initialize Supabase client');
+      }
+      
       const { error } = await supabase
         .from('llm_api_keys')
         .update({
@@ -183,6 +197,11 @@ export default function ApiKeyForm() {
   // Delete an API key
   const deleteKey = async (id: string) => {
     try {
+      const supabase = getBrowserSupabase();
+      if (!supabase) {
+        throw new Error('Failed to initialize Supabase client');
+      }
+      
       const { error } = await supabase
         .from('llm_api_keys')
         .delete()
@@ -234,7 +253,7 @@ export default function ApiKeyForm() {
       setTestResults(prev => ({ ...prev, [id]: false }));
       toast({
         title: 'Error',
-        description: 'Failed to test API key',
+        description: 'Failed to test API key connection',
         variant: 'destructive',
       });
     } finally {
@@ -244,47 +263,40 @@ export default function ApiKeyForm() {
   
   // Mask the API key for display
   const maskApiKey = (key: string) => {
-    if (key.length <= 8) return '********';
+    if (!key || key.length < 8) return '********';
     return key.substring(0, 4) + '********' + key.substring(key.length - 4);
   };
   
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-semibold">LLM API Keys</h2>
-        <p className="text-sm text-muted-foreground">
-          Manage API keys for language models used by the agent builder
-        </p>
-      </div>
-      
-      {/* Add new API key form */}
-      <form onSubmit={handleSubmit} className="space-y-4 p-4 border rounded-md">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+      <form onSubmit={handleSubmit} className="space-y-4 p-4 border rounded-lg">
+        <h2 className="text-lg font-medium">Add New LLM API Key</h2>
+        
+        <div className="grid grid-cols-3 gap-4">
           <div>
             <Label htmlFor="provider">Provider</Label>
-            <Select
-              value={provider}
-              onValueChange={setProvider}
-            >
-              <SelectTrigger>
+            <Select value={provider} onValueChange={setProvider}>
+              <SelectTrigger id="provider">
                 <SelectValue placeholder="Select provider" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="openai">OpenAI</SelectItem>
                 <SelectItem value="anthropic">Anthropic</SelectItem>
+                <SelectItem value="google">Google AI</SelectItem>
+                <SelectItem value="azure">Azure OpenAI</SelectItem>
+                <SelectItem value="mistral">Mistral AI</SelectItem>
               </SelectContent>
             </Select>
           </div>
           
-          <div className="md:col-span-2">
-            <Label htmlFor="apiKey">API Key</Label>
+          <div className="col-span-2">
+            <Label htmlFor="api-key">API Key</Label>
             <Input
-              id="apiKey"
+              id="api-key"
               type="password"
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               placeholder="Enter API key"
-              autoComplete="off"
             />
           </div>
         </div>
@@ -294,87 +306,82 @@ export default function ApiKeyForm() {
         </Button>
       </form>
       
-      {/* API key list */}
-      <div className="border rounded-md overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-muted">
-            <tr>
-              <th className="p-3 text-left font-medium">Provider</th>
-              <th className="p-3 text-left font-medium">API Key</th>
-              <th className="p-3 text-left font-medium">Status</th>
-              <th className="p-3 text-left font-medium">Added</th>
-              <th className="p-3 text-left font-medium">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading ? (
-              <tr>
-                <td colSpan={5} className="p-3 text-center">
-                  Loading API keys...
-                </td>
-              </tr>
-            ) : apiKeys.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="p-3 text-center">
-                  No API keys found. Add your first API key above.
-                </td>
-              </tr>
-            ) : (
-              apiKeys.map((key) => (
-                <tr key={key.id} className="border-t">
-                  <td className="p-3 font-medium capitalize">{key.provider}</td>
-                  <td className="p-3 font-mono text-sm">{maskApiKey(key.api_key)}</td>
-                  <td className="p-3">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs ${
-                        key.is_active
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-gray-100 text-gray-800'
-                      }`}
-                    >
-                      {key.is_active ? 'Active' : 'Inactive'}
-                    </span>
-                  </td>
-                  <td className="p-3 text-sm text-muted-foreground">
-                    {new Date(key.created_at).toLocaleDateString()}
-                  </td>
-                  <td className="p-3">
-                    <div className="flex space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => testKey(key.id, key.provider, key.api_key)}
-                        disabled={isTesting[key.id]}
-                      >
-                        {isTesting[key.id]
-                          ? 'Testing...'
-                          : testResults[key.id] === undefined
-                          ? 'Test'
-                          : testResults[key.id]
-                          ? <CheckCircle className="w-4 h-4 mr-1 text-green-600" />
-                          : <XCircle className="w-4 h-4 mr-1 text-red-600" />}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => toggleKeyStatus(key.id, key.is_active)}
-                      >
-                        {key.is_active ? 'Deactivate' : 'Activate'}
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => deleteKey(key.id)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+      <div className="space-y-4">
+        <h2 className="text-lg font-medium">API Keys</h2>
+        
+        {isLoading ? (
+          <div className="text-center p-4">Loading API keys...</div>
+        ) : apiKeys.length === 0 ? (
+          <div className="text-center p-4 text-muted-foreground">
+            No API keys found. Add your first API key above.
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {apiKeys.map((key) => (
+              <div
+                key={key.id}
+                className="p-4 border rounded-lg flex items-center justify-between"
+              >
+                <div>
+                  <div className="font-medium">
+                    {key.provider.charAt(0).toUpperCase() + key.provider.slice(1)}
+                    {key.is_active && (
+                      <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                        Active
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-sm text-muted-foreground font-mono">
+                    {maskApiKey(key.api_key)}
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Added: {new Date(key.created_at).toLocaleString()}
+                  </div>
+                </div>
+                
+                <div className="flex space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => testKey(key.id, key.provider, key.api_key)}
+                    disabled={isTesting[key.id]}
+                  >
+                    {isTesting[key.id] ? (
+                      'Testing...'
+                    ) : testResults[key.id] === undefined ? (
+                      'Test'
+                    ) : testResults[key.id] ? (
+                      <span className="flex items-center text-green-600">
+                        <CheckCircle className="w-4 h-4 mr-1" /> Valid
+                      </span>
+                    ) : (
+                      <span className="flex items-center text-red-600">
+                        <XCircle className="w-4 h-4 mr-1" /> Invalid
+                      </span>
+                    )}
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => toggleKeyStatus(key.id, key.is_active)}
+                  >
+                    {key.is_active ? 'Deactivate' : 'Activate'}
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => deleteKey(key.id)}
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

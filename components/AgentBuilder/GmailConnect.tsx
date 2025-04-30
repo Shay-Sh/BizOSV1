@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { browserSupabase } from '@/lib/supabase/client';
+import { getBrowserSupabase } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -7,15 +7,23 @@ export default function GmailConnect() {
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+  const [clientError, setClientError] = useState<string | null>(null);
   const { toast } = useToast();
-  
-  // Use the singleton browser client
-  const supabase = browserSupabase;
   
   // Check if Gmail is already connected
   const checkGmailConnection = async () => {
     try {
       setIsLoading(true);
+      setClientError(null);
+      
+      // Get Supabase client
+      const supabase = getBrowserSupabase();
+      
+      if (!supabase) {
+        setClientError("Unable to initialize Supabase client. Please check your browser console for more details.");
+        setIsLoading(false);
+        return;
+      }
       
       // Get the current user
       const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -112,6 +120,18 @@ export default function GmailConnect() {
       checkGmailConnection();
     }
   }, []);
+  
+  if (clientError) {
+    return (
+      <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+        <h3 className="text-lg font-medium text-red-800">Connection Error</h3>
+        <p className="text-sm text-red-700 mt-1">{clientError}</p>
+        <p className="text-xs text-red-600 mt-2">
+          Please ensure your browser has cookies enabled and that you're logged in.
+        </p>
+      </div>
+    );
+  }
   
   return (
     <div className="rounded-lg border p-4 space-y-4">

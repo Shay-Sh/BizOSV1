@@ -18,18 +18,64 @@ export const createServerClient = () => {
   })
 }
 
+// Get the public environment variables for client components
+export const getClientEnvVars = () => {
+  // For browser environments
+  if (typeof window !== 'undefined') {
+    // Access from window if available (set by Next.js)
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+    
+    if (!supabaseUrl || !supabaseKey) {
+      console.error('Missing Supabase environment variables in browser');
+    }
+    
+    return { supabaseUrl, supabaseKey };
+  }
+  
+  // For server-side rendering
+  return {
+    supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+    supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+  };
+}
+
 // For client components
 export const createBrowserSupabaseClient = () => {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  // Get environment variables
+  const { supabaseUrl, supabaseKey } = getClientEnvVars();
 
   if (!supabaseUrl || !supabaseKey) {
-    throw new Error('Missing Supabase environment variables')
+    console.error('Missing Supabase environment variables');
+    throw new Error('Missing Supabase environment variables');
   }
 
   // Using enhanced options for better session persistence
-  return createBrowserClient<Database>(supabaseUrl, supabaseKey)
+  return createBrowserClient<Database>(supabaseUrl, supabaseKey);
 }
 
-// Singleton instance for client components
-export const browserSupabase = createBrowserSupabaseClient() 
+// Create a function that safely initializes the browser client
+let browserSupabaseInstance: ReturnType<typeof createBrowserSupabaseClient> | null = null;
+
+export const getBrowserSupabase = () => {
+  // Skip in SSR context
+  if (typeof window === 'undefined') {
+    return null;
+  }
+  
+  try {
+    // Create instance if it doesn't exist
+    if (!browserSupabaseInstance) {
+      browserSupabaseInstance = createBrowserSupabaseClient();
+    }
+    return browserSupabaseInstance;
+  } catch (error) {
+    console.error('Error initializing Supabase client:', error);
+    return null;
+  }
+}
+
+// For backwards compatibility
+export const browserSupabase = typeof window !== 'undefined' 
+  ? createBrowserSupabaseClient() 
+  : null as any; // Type assertion needed for SSR 

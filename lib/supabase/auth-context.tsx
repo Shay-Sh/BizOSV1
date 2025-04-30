@@ -1,8 +1,8 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { User, Session } from '@supabase/supabase-js';
-import { browserSupabase } from './client';
+import { User, Session, AuthChangeEvent } from '@supabase/supabase-js';
+import { getBrowserSupabase, browserSupabase } from './client';
 
 type AuthContextType = {
   user: User | null;
@@ -20,56 +20,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
-    console.log('AuthContext: Initializing auth state, environment:', 
-      typeof window !== 'undefined' ? window.location.hostname : 'server');
-    
-    const fetchSession = async () => {
+    if (!browserSupabase) {
+      console.error('AuthContext: Unable to initialize Supabase client');
+      setIsLoading(false);
+      return;
+    }
+
+    // Get initial session
+    const initUser = async () => {
       try {
-        // Get initial session
         const { data, error } = await browserSupabase.auth.getSession();
-        
         if (error) {
-          console.error('AuthContext: Error fetching session', error);
-        } else {
-          console.log('AuthContext: Session fetched successfully', 
-            data.session ? `User is authenticated: ${data.session.user.email}` : 'No active session');
-          
-          if (data.session) {
-            console.log('AuthContext: User ID from session:', data.session.user.id);
-          }
-          
-          setSession(data.session);
-          setUser(data.session?.user ?? null);
+          throw error;
         }
-      } catch (err) {
-        console.error('AuthContext: Unexpected error during session fetch', err);
         
-        // Retry logic for production environment
-        if (retryCount < 3) {
-          console.log(`AuthContext: Retrying session fetch (attempt ${retryCount + 1}/3)...`);
-          setTimeout(() => {
-            setRetryCount(prev => prev + 1);
-          }, 1000);
-        }
+        setSession(data.session);
+        setUser(data.session?.user ?? null);
+      } catch (error) {
+        console.error('AuthContext: Error getting session:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchSession();
+    initUser();
 
     // Listen for auth changes
     const { data: { subscription } } = browserSupabase.auth.onAuthStateChange(
-      (event, session) => {
+      (event: AuthChangeEvent, session: Session | null) => {
         console.log('AuthContext: Auth state changed', event, 
           session ? `User session exists: ${session.user.email}` : 'No session');
-        
-        if (session) {
-          console.log('AuthContext: User ID from auth state change:', session.user.id);
-        }
         
         setSession(session);
         setUser(session?.user ?? null);
@@ -78,113 +60,97 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
 
     return () => {
-      console.log('AuthContext: Cleaning up auth subscription');
       subscription.unsubscribe();
     };
-  }, [retryCount]);
-
-  // Force refresh the session if needed
-  useEffect(() => {
-    const refreshSession = async () => {
-      if (session) {
-        try {
-          const { error } = await browserSupabase.auth.refreshSession();
-          if (error) {
-            console.error('AuthContext: Failed to refresh session', error);
-          } else {
-            console.log('AuthContext: Session refreshed successfully');
-          }
-        } catch (err) {
-          console.error('AuthContext: Unexpected error during session refresh', err);
-        }
-      }
-    };
-
-    // Set up periodic session refresh (every 10 minutes)
-    const refreshInterval = setInterval(refreshSession, 10 * 60 * 1000);
-
-    return () => clearInterval(refreshInterval);
-  }, [session]);
+  }, []);
 
   const signUp = async (email: string, password: string) => {
-    console.log('AuthContext: Signing up user', email);
-    const { data, error } = await browserSupabase.auth.signUp({
-      email,
-      password,
-    });
-    
-    if (error) {
-      console.error('AuthContext: Sign up failed', error);
-    } else {
-      console.log('AuthContext: Sign up successful', data);
-      // Immediately set user and session to avoid waiting for the auth state change
-      if (data.user) {
-        setUser(data.user);
-        setSession(data.session);
+    try {
+      const supabase = getBrowserSupabase();
+      if (!supabase) {
+        throw new Error('Failed to initialize Supabase client');
       }
+      
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+      
+      return { error };
+    } catch (error) {
+      console.error('AuthContext: Error during sign up:', error);
+      return { error };
     }
-    
-    return { error };
   };
 
   const signIn = async (email: string, password: string) => {
-    console.log('AuthContext: Signing in user', email);
-    const { data, error } = await browserSupabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    
-    if (error) {
-      console.error('AuthContext: Sign in failed', error);
-    } else {
-      console.log('AuthContext: Sign in successful', data.user?.id);
-      // Immediately set user and session to avoid waiting for the auth state change
-      if (data.user) {
-        setUser(data.user);
-        setSession(data.session);
+    try {
+      const supabase = getBrowserSupabase();
+      if (!supabase) {
+        throw new Error('Failed to initialize Supabase client');
       }
+      
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      return { error };
+    } catch (error) {
+      console.error('AuthContext: Error during sign in:', error);
+      return { error };
     }
-    
-    return { error };
-  };
-
-  const signOut = async () => {
-    console.log('AuthContext: Signing out user');
-    await browserSupabase.auth.signOut();
-    // Clear user and session immediately
-    setUser(null);
-    setSession(null);
   };
 
   const signInWithGoogle = async () => {
-    console.log('AuthContext: Signing in with Google');
-    const { data, error } = await browserSupabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/dashboard`
+    try {
+      const supabase = getBrowserSupabase();
+      if (!supabase) {
+        throw new Error('Failed to initialize Supabase client');
       }
-    });
-    
-    if (error) {
-      console.error('AuthContext: Google sign in failed', error);
-    } else {
-      console.log('AuthContext: Google sign in initiated');
+      
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      
+      return { error };
+    } catch (error) {
+      console.error('AuthContext: Error during Google sign in:', error);
+      return { error };
     }
-    
-    return { error };
   };
 
-  const value = {
-    user,
-    session,
-    isLoading,
-    signUp,
-    signIn,
-    signOut,
-    signInWithGoogle
+  const signOut = async () => {
+    try {
+      const supabase = getBrowserSupabase();
+      if (!supabase) {
+        throw new Error('Failed to initialize Supabase client');
+      }
+      
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.error('AuthContext: Error during sign out:', error);
+    }
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        session,
+        isLoading,
+        signUp,
+        signIn,
+        signOut,
+        signInWithGoogle,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {
