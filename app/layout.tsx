@@ -17,6 +17,16 @@ export default function RootLayout({
       <html lang="en" suppressHydrationWarning>
         <head>
           <link rel="icon" href="/favicon.ico" />
+          {/* Environment variables script */}
+          <script 
+            dangerouslySetInnerHTML={{
+              __html: `
+                // Inject environment variables to window for easier access
+                window.ENV_SUPABASE_URL = "${process.env.NEXT_PUBLIC_SUPABASE_URL || ''}";
+                window.ENV_SUPABASE_KEY = "${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''}";
+              `
+            }}
+          />
         </head>
         <body className={`${inter.className} min-h-screen bg-background text-foreground`}>
           <ThemeProvider
@@ -31,4 +41,4 @@ export default function RootLayout({
       </html>
     </AuthProvider>
   )
-} 
+}

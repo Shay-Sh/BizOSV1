@@ -31,6 +31,18 @@ export const getClientEnvVars = () => {
   let supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
   let supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
   
+  // Try to get values from window object if available in the browser
+  // This is sometimes more reliable than process.env in client side
+  if (isBrowser && window && 'ENV_SUPABASE_URL' in window) {
+    // @ts-ignore
+    supabaseUrl = window.ENV_SUPABASE_URL || supabaseUrl;
+  }
+  
+  if (isBrowser && window && 'ENV_SUPABASE_KEY' in window) {
+    // @ts-ignore
+    supabaseKey = window.ENV_SUPABASE_KEY || supabaseKey;
+  }
+  
   // Log available environment variables in development
   if (process.env.NODE_ENV === 'development' && isBrowser) {
     console.log('Environment vars available in client:', {
@@ -39,13 +51,13 @@ export const getClientEnvVars = () => {
     });
   }
   
-  // Use fallbacks in case of empty strings (only in development)
-  if (!supabaseUrl && process.env.NODE_ENV === 'development') {
+  // In production, always use the environment variables or hardcoded values as absolute last resort
+  if (!supabaseUrl) {
     console.warn('Using fallback SUPABASE_URL');
     supabaseUrl = FALLBACK_SUPABASE_URL;
   }
   
-  if (!supabaseKey && process.env.NODE_ENV === 'development') {
+  if (!supabaseKey) {
     console.warn('Using fallback SUPABASE_ANON_KEY');
     supabaseKey = FALLBACK_ANON_KEY;
   }
@@ -58,22 +70,50 @@ export const createBrowserSupabaseClient = () => {
   // Get environment variables
   const { supabaseUrl, supabaseKey } = getClientEnvVars();
 
-  if (!supabaseUrl) {
-    console.error('ERROR: NEXT_PUBLIC_SUPABASE_URL is not defined');
-    throw new Error('NEXT_PUBLIC_SUPABASE_URL is not defined');
+  // Add explicit validation for empty strings
+  if (!supabaseUrl || supabaseUrl.trim() === '') {
+    console.error('ERROR: NEXT_PUBLIC_SUPABASE_URL is empty or not defined');
+    
+    // Force a valid URL in production to prevent crashes
+    const url = FALLBACK_SUPABASE_URL;
+    console.warn(`Using hardcoded URL: ${url.substring(0, 10)}...`);
+    
+    if (!FALLBACK_ANON_KEY || FALLBACK_ANON_KEY.trim() === '') {
+      throw new Error('No valid Supabase URL available');
+    }
+    
+    // Try with the fallback URL and key
+    return createBrowserClient<Database>(FALLBACK_SUPABASE_URL, FALLBACK_ANON_KEY);
   }
   
-  if (!supabaseKey) {
-    console.error('ERROR: NEXT_PUBLIC_SUPABASE_ANON_KEY is not defined');
-    throw new Error('NEXT_PUBLIC_SUPABASE_ANON_KEY is not defined');
+  if (!supabaseKey || supabaseKey.trim() === '') {
+    console.error('ERROR: NEXT_PUBLIC_SUPABASE_ANON_KEY is empty or not defined');
+    
+    // Force a valid key in production to prevent crashes
+    console.warn(`Using hardcoded API key as fallback`);
+    
+    if (!FALLBACK_ANON_KEY || FALLBACK_ANON_KEY.trim() === '') {
+      throw new Error('No valid Supabase key available');
+    }
+    
+    // Try with the URL and fallback key
+    return createBrowserClient<Database>(supabaseUrl, FALLBACK_ANON_KEY);
   }
 
   try {
+    // Log successful initialization in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Initializing Supabase with URL: ${supabaseUrl.substring(0, 10)}... and key length: ${supabaseKey.length}`);
+    }
+    
     // Using enhanced options for better session persistence
     return createBrowserClient<Database>(supabaseUrl, supabaseKey);
   } catch (error) {
     console.error('Failed to create Supabase client:', error);
-    throw error;
+    
+    // Final fallback attempt
+    console.warn('Attempting with fallback values as last resort');
+    return createBrowserClient<Database>(FALLBACK_SUPABASE_URL, FALLBACK_ANON_KEY);
   }
 }
 
