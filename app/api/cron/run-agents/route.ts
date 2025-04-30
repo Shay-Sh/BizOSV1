@@ -12,7 +12,6 @@ const supabase = createClient<Database>(supabaseUrl, supabaseServiceKey);
 // Use the new route segment config format
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
-export const bodyParser = false;
 
 /**
  * POST /api/cron/run-agents
