@@ -68,6 +68,15 @@ CREATE TABLE IF NOT EXISTS agent_schedules (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
+-- Create a user_roles table if it doesn't exist yet
+CREATE TABLE IF NOT EXISTS user_roles (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  role TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
 -- RLS Policies
 
 -- Agent flows policies

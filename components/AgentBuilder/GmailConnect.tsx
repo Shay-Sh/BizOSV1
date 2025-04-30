@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { browserSupabase } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -9,8 +9,8 @@ export default function GmailConnect() {
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const { toast } = useToast();
   
-  // Initialize Supabase client
-  const supabase = createClientComponentClient();
+  // Use the singleton browser client
+  const supabase = browserSupabase;
   
   // Check if Gmail is already connected
   const checkGmailConnection = async () => {

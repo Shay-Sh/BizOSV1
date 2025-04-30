@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { browserSupabase } from '@/lib/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -13,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Check, AlertTriangle, Tag, Archive, FolderInput, MailIcon, Play, Clock, PlusCircle, Save } from 'lucide-react';
 import { TestAgentFlow, TestFlowConfig, TestFlowResult, TestResultEmail } from '@/utils/test-agent-flow';
 import { MockGmailService, MockGmailEmail } from '@/lib/agent-builder/mock-gmail-service';
+import GmailConnect from '@/components/AgentBuilder/GmailConnect';
 
 export default function TestAgentRunnerPage() {
   const [isRunning, setIsRunning] = useState(false);
@@ -136,6 +138,17 @@ export default function TestAgentRunnerPage() {
           </Button>
         </div>
       </div>
+      
+      {/* Gmail Connection Component */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Gmail Connection</CardTitle>
+          <CardDescription>Connect your Gmail account to test and run automation agents</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <GmailConnect />
+        </CardContent>
+      </Card>
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col">
         <TabsList className="mb-4 grid grid-cols-3">
