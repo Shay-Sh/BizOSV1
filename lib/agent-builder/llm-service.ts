@@ -326,13 +326,41 @@ export class LLMService {
     const apiKey = await this.getApiKey(provider);
     
     try {
+      // Create email content for classification
+      const prompt = `
+Subject: ${email.subject}
+From: ${email.from}
+Date: ${email.date}
+Body:
+${email.snippet || email.body?.substring(0, 500) || 'No content'}
+      `.trim();
+
+      // Use the existing classification methods
+      let category = '';
       if (provider === 'openai') {
-        return await this.classifyWithOpenAI(email, apiKey, model, categories, systemPrompt);
+        // Use the existing OpenAI text classification with proper model casting
+        category = await this.classifyWithOpenAI(
+          prompt, 
+          model as 'gpt-3.5-turbo' | 'gpt-4',
+          categories
+        );
       } else if (provider === 'anthropic') {
-        return await this.classifyWithAnthropic(email, apiKey, model, categories, systemPrompt);
+        // Use the existing Anthropic text classification with proper model casting
+        category = await this.classifyWithAnthropic(
+          prompt,
+          model as 'claude-3-haiku' | 'claude-3-sonnet',
+          categories
+        );
       } else {
         throw new Error(`Provider ${provider} not implemented`);
       }
+      
+      // Return a properly formatted ClassificationResult
+      return {
+        category,
+        confidence: 0.95, // Mock confidence value
+        reasoning: "Classification based on email content analysis"
+      };
     } catch (error) {
       console.error('Error classifying email:', error);
       throw error;
@@ -375,4 +403,8 @@ export class LLMService {
   }
 }
 
-export default LLMService; 
+// Create an instance with the default configuration
+const llmService = new LLMService();
+
+// Export the instance
+export default llmService; 
