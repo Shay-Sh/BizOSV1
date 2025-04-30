@@ -68,7 +68,7 @@ export default function NewAgentModal({ children }: NewAgentModalProps) {
       });
       
       setOpen(false);
-      router.push(`/agent-builder/${data.id}`);
+      router.push(`/agent-builder/${data.agent.id}`);
       router.refresh();
     } catch (error) {
       console.error('Error creating agent:', error);
