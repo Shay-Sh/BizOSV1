@@ -15,72 +15,7 @@ import { Check, AlertTriangle, Tag, Archive, FolderInput, MailIcon, Play, Clock,
 import { TestAgentFlow, TestFlowConfig, TestFlowResult, TestResultEmail } from '@/utils/test-agent-flow';
 import { MockGmailService, MockGmailEmail } from '@/lib/agent-builder/mock-gmail-service';
 import GmailConnect from '@/components/AgentBuilder/GmailConnect';
-
-// A component to show diagnostic information
-function SupabaseDiagnostics() {
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
-  const [message, setMessage] = useState<string>('Checking Supabase connection...');
-  
-  useEffect(() => {
-    // Check if environment variables are available
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    
-    if (!supabaseUrl || !supabaseKey) {
-      setStatus('error');
-      setMessage('Environment variables missing. Make sure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are set.');
-      return;
-    }
-    
-    // Try to initialize the client
-    try {
-      const supabase = getBrowserSupabase();
-      if (!supabase) {
-        setStatus('error');
-        setMessage('Failed to initialize Supabase client');
-        return;
-      }
-      
-      // Test the connection
-      supabase.auth.getSession().then(({ data, error }) => {
-        if (error) {
-          setStatus('error');
-          setMessage(`Supabase error: ${error.message}`);
-        } else {
-          setStatus('success');
-          setMessage(`Supabase connected successfully${data.session ? ' (User authenticated)' : ' (No active session)'}`);
-        }
-      });
-    } catch (error) {
-      setStatus('error');
-      setMessage(`Initialization error: ${error instanceof Error ? error.message : String(error)}`);
-    }
-  }, []);
-  
-  const colors = {
-    loading: 'bg-yellow-50 border-yellow-200 text-yellow-800',
-    success: 'bg-green-50 border-green-200 text-green-800',
-    error: 'bg-red-50 border-red-200 text-red-800'
-  };
-  
-  return (
-    <div className={`rounded-lg border p-4 ${colors[status]}`}>
-      <h3 className="text-lg font-medium">Supabase Diagnostics</h3>
-      <p className="text-sm mt-1">{message}</p>
-      {status === 'error' && (
-        <div className="mt-2 text-sm">
-          <p>Troubleshooting:</p>
-          <ul className="list-disc pl-5 mt-1 space-y-1">
-            <li>Check your .env.local file for correct environment variables</li>
-            <li>Verify that Next.js is properly loading the environment variables</li>
-            <li>Check console for any additional error messages</li>
-            <li>Try clearing your browser cache or using incognito mode</li>
-          </ul>
-        </div>
-      )}
-    </div>
-  );
-}
+import SupabaseDiagnostics from '@/components/SupabaseDiagnostics';
 
 export default function TestAgentRunnerPage() {
   const [isRunning, setIsRunning] = useState(false);

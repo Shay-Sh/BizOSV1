@@ -22,7 +22,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!browserSupabase) {
+    // Initialize Supabase client
+    const supabase = getBrowserSupabase();
+    
+    if (!supabase) {
       console.error('AuthContext: Unable to initialize Supabase client');
       setIsLoading(false);
       return;
@@ -31,7 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Get initial session
     const initUser = async () => {
       try {
-        const { data, error } = await browserSupabase.auth.getSession();
+        const { data, error } = await supabase.auth.getSession();
         if (error) {
           throw error;
         }
@@ -48,7 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     initUser();
 
     // Listen for auth changes
-    const { data: { subscription } } = browserSupabase.auth.onAuthStateChange(
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event: AuthChangeEvent, session: Session | null) => {
         console.log('AuthContext: Auth state changed', event, 
           session ? `User session exists: ${session.user.email}` : 'No session');

@@ -20,38 +20,35 @@ export const createServerClient = () => {
 
 // Get the public environment variables for client components
 export const getClientEnvVars = () => {
-  // For browser environments
-  if (typeof window !== 'undefined') {
-    // Access from window if available (set by Next.js)
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-    
-    if (!supabaseUrl || !supabaseKey) {
-      console.error('Missing Supabase environment variables in browser');
-    }
-    
-    return { supabaseUrl, supabaseKey };
-  }
+  // These values are embedded at build time for client components
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
   
-  // For server-side rendering
-  return {
-    supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-    supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-  };
+  return { supabaseUrl, supabaseKey };
 }
 
-// For client components
+// For client components - with proper error handling
 export const createBrowserSupabaseClient = () => {
   // Get environment variables
   const { supabaseUrl, supabaseKey } = getClientEnvVars();
 
-  if (!supabaseUrl || !supabaseKey) {
-    console.error('Missing Supabase environment variables');
-    throw new Error('Missing Supabase environment variables');
+  if (!supabaseUrl) {
+    console.error('ERROR: NEXT_PUBLIC_SUPABASE_URL is not defined');
+    throw new Error('NEXT_PUBLIC_SUPABASE_URL is not defined');
+  }
+  
+  if (!supabaseKey) {
+    console.error('ERROR: NEXT_PUBLIC_SUPABASE_ANON_KEY is not defined');
+    throw new Error('NEXT_PUBLIC_SUPABASE_ANON_KEY is not defined');
   }
 
-  // Using enhanced options for better session persistence
-  return createBrowserClient<Database>(supabaseUrl, supabaseKey);
+  try {
+    // Using enhanced options for better session persistence
+    return createBrowserClient<Database>(supabaseUrl, supabaseKey);
+  } catch (error) {
+    console.error('Failed to create Supabase client:', error);
+    throw error;
+  }
 }
 
 // Create a function that safely initializes the browser client
@@ -71,11 +68,20 @@ export const getBrowserSupabase = () => {
     return browserSupabaseInstance;
   } catch (error) {
     console.error('Error initializing Supabase client:', error);
+    // Return null instead of throwing to prevent app crashes
     return null;
   }
 }
 
-// For backwards compatibility
+// For backwards compatibility - with proper error handling
 export const browserSupabase = typeof window !== 'undefined' 
-  ? createBrowserSupabaseClient() 
-  : null as any; // Type assertion needed for SSR 
+  ? (() => {
+      try {
+        return createBrowserSupabaseClient();
+      } catch (error) {
+        console.error('Failed to initialize browserSupabase:', error);
+        // Return a dummy object to prevent crashes in old code that expects this
+        return null;
+      }
+    })() 
+  : null; 
