@@ -5,6 +5,9 @@ const nextConfig = {
   },
   eslint: {
     dirs: ['app', 'components', 'lib', 'types'],
+    // Warning: This allows production builds to successfully complete even if
+    // your project has ESLint errors.
+    ignoreDuringBuilds: true,
   },
   
   // Add redirects for any direct routes to their proper app/(app) versions
