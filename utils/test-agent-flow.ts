@@ -1,6 +1,7 @@
 import { NodeType } from '@/lib/agent-builder/engine';
 import { MockGmailService, MockGmailEmail } from '@/lib/agent-builder/mock-gmail-service';
 import { LLMService } from '@/lib/agent-builder/llm-service';
+import { EmailData } from '@/lib/agent-builder/gmail-service';
 
 export interface TestFlowConfig {
   id: string;
@@ -124,12 +125,23 @@ export class TestAgentFlow {
    * Get the results of the test run
    */
   public getResults(): {
-    emails: MockGmailEmail[];
+    emails: EmailData[];
     classifications: Record<string, { category: string; confidence: number; reasoning: string }>;
     actions: { emailId: string; action: string; success: boolean; message?: string }[];
     errors: string[];
   } | null {
-    return this.results;
+    if (!this.results) return null;
+    
+    // Convert from MockGmailEmail to EmailData format (especially date from Date to string)
+    const emails: EmailData[] = this.results.emails.map(email => ({
+      ...email,
+      date: email.date instanceof Date ? email.date.toISOString() : email.date,
+    }));
+    
+    return {
+      ...this.results,
+      emails
+    };
   }
 
   /**
