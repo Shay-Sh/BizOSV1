@@ -55,15 +55,122 @@ export class TestAgentFlow {
   private mockGmailService: MockGmailService;
   private llmService: LLMService;
   private config: TestFlowConfig;
+  private results: {
+    emails: MockGmailEmail[];
+    classifications: Record<string, { category: string; confidence: number; reasoning: string }>;
+    actions: { emailId: string; action: string; success: boolean; message?: string }[];
+    errors: string[];
+  } | null = null;
 
   constructor(
-    config: TestFlowConfig,
-    mockGmailService?: MockGmailService,
-    llmService?: LLMService
+    config: any, // Modified to accept any type including Flow
+    options?: { useRealLLM?: boolean }
   ) {
-    this.config = config;
-    this.mockGmailService = mockGmailService || new MockGmailService({ simulateAuth: true });
-    this.llmService = llmService || new LLMService();
+    // Convert Flow type to TestFlowConfig if needed
+    if (config && typeof config === 'object' && !config.triggerConfig) {
+      this.config = TestAgentFlow.createConfig(
+        config.name || 'Test Flow',
+        (config.nodes?.find((n: any) => n.type === 'classifier')?.config?.categories || ['Important', 'Not Important']),
+        {} // Default actions
+      );
+    } else {
+      this.config = config as TestFlowConfig;
+    }
+
+    this.mockGmailService = new MockGmailService({ simulateAuth: true });
+    this.llmService = new LLMService();
+
+    // Add some test emails
+    this.addDefaultTestEmails();
+  }
+
+  /**
+   * Reset the test agent state
+   */
+  public reset(): void {
+    this.results = null;
+  }
+
+  /**
+   * Execute the test flow
+   */
+  public async execute(): Promise<void> {
+    const testResult = await this.runTest();
+    
+    // Convert to the format expected by the UI components
+    this.results = {
+      emails: testResult.processedEmails.map(item => item.email),
+      classifications: testResult.processedEmails.reduce((acc, item) => {
+        if (item.classification && item.classification !== 'ERROR') {
+          acc[item.email.id] = {
+            category: item.classification,
+            confidence: 0.95,
+            reasoning: item.actionDetails || 'Classified based on email content'
+          };
+        }
+        return acc;
+      }, {} as Record<string, { category: string; confidence: number; reasoning: string }>),
+      actions: testResult.processedEmails.map(item => ({
+        emailId: item.email.id,
+        action: item.action,
+        success: item.success,
+        message: item.actionDetails
+      })),
+      errors: testResult.error ? [testResult.error] : []
+    };
+  }
+
+  /**
+   * Get the results of the test run
+   */
+  public getResults(): {
+    emails: MockGmailEmail[];
+    classifications: Record<string, { category: string; confidence: number; reasoning: string }>;
+    actions: { emailId: string; action: string; success: boolean; message?: string }[];
+    errors: string[];
+  } | null {
+    return this.results;
+  }
+
+  /**
+   * Add default test emails
+   */
+  private addDefaultTestEmails(): void {
+    const testEmails = [
+      {
+        subject: "Important Client Meeting Tomorrow",
+        from: "client@example.com",
+        body: "We need to discuss the project timeline. Please prepare the latest status report.",
+        labelIds: ["INBOX"]
+      },
+      {
+        subject: "Weekly Newsletter",
+        from: "newsletter@company.com",
+        body: "Check out the latest company updates and industry news in our weekly digest.",
+        labelIds: ["INBOX"]
+      },
+      {
+        subject: "Urgent: System Outage Reported",
+        from: "alerts@monitoring.com",
+        body: "Several critical systems are down. Please investigate immediately.",
+        labelIds: ["INBOX"]
+      },
+      {
+        subject: "Your subscription has been renewed",
+        from: "billing@service.com",
+        body: "Thank you for your continued support. Your subscription has been renewed for another year.",
+        labelIds: ["INBOX"]
+      },
+      {
+        subject: "Team lunch on Friday",
+        from: "hr@company.com",
+        body: "Join us for a team building lunch this Friday at 1pm in the cafeteria.",
+        labelIds: ["INBOX"]
+      }
+    ];
+
+    // Remove any existing test emails and add new ones
+    testEmails.forEach(email => this.mockGmailService.addTestEmail(email));
   }
 
   /**

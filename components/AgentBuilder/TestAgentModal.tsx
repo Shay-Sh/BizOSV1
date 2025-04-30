@@ -17,7 +17,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Flow } from '@/lib/agent-builder/engine';
-import TestAgentFlow from '@/utils/test-agent-flow';
+import { TestAgentFlow } from '@/utils/test-agent-flow';
 import { EmailData } from '@/lib/agent-builder/gmail-service';
 import { ClassificationResult } from '@/lib/agent-builder/llm-service';
 

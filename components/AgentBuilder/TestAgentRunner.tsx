@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Mail, Tag, CheckCircle, XCircle, Loader2, RefreshCw } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Flow } from '@/lib/agent-builder/engine';
-import TestAgentFlow from '@/utils/test-agent-flow';
+import { TestAgentFlow } from '@/utils/test-agent-flow';
 import { EmailData } from '@/lib/agent-builder/gmail-service';
 import { ClassificationResult } from '@/lib/agent-builder/llm-service';
 import { Separator } from '@/components/ui/separator';
