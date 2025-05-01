@@ -55,6 +55,8 @@ export function SupabaseStatus() {
     return null;
   }
 
+  const isLoading = status === 'loading';
+
   return (
     <div className={`fixed bottom-4 right-4 p-4 rounded-lg shadow-lg ${
       status === 'connected' ? 'bg-green-100' : status === 'error' ? 'bg-red-100' : 'bg-gray-100'
@@ -89,7 +91,7 @@ export function SupabaseStatus() {
             size="sm" 
             variant="outline" 
             onClick={checkConnection}
-            disabled={status === 'loading'}
+            disabled={isLoading}
           >
             Retry
           </Button>
@@ -99,7 +101,7 @@ export function SupabaseStatus() {
               size="sm" 
               variant="default" 
               onClick={tryWithFallback}
-              disabled={status === 'loading'}
+              disabled={isLoading}
             >
               Try Fallback
             </Button>
