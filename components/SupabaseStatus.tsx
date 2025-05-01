@@ -2,19 +2,28 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { directSupabaseClient, createDirectClient, getDirectSupabaseClient } from '@/lib/supabase/direct-client';
+import { createDirectClient, getDirectSupabaseClient } from '@/lib/supabase/direct-client';
 
 export function SupabaseStatus() {
   const [status, setStatus] = useState<'loading' | 'connected' | 'error'>('loading');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isVisible, setIsVisible] = useState(true);
+  const [envInfo, setEnvInfo] = useState<string | null>(null);
 
   async function checkConnection() {
     setStatus('loading');
     setErrorMessage(null);
 
     try {
-      // Try with the direct client first - use the getter to ensure fresh instance
+      // Get environment variable info for debugging
+      const envDebug = {
+        hasUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+        hasKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+        env: process.env.NODE_ENV
+      };
+      setEnvInfo(JSON.stringify(envDebug, null, 2));
+
+      // Create a fresh client (don't reuse directSupabaseClient)
       const client = getDirectSupabaseClient();
       const { error } = await client.from('api_keys').select('id').limit(1);
       
@@ -48,6 +57,7 @@ export function SupabaseStatus() {
     }
   }
 
+  // Use useEffect to avoid any module-level supabase initialization
   useEffect(() => {
     checkConnection();
   }, []);
@@ -86,6 +96,12 @@ export function SupabaseStatus() {
         {errorMessage && (
           <div className="text-sm text-red-600 max-w-xs overflow-auto">
             {errorMessage}
+          </div>
+        )}
+
+        {envInfo && (
+          <div className="text-xs bg-gray-800 text-white p-2 rounded my-1 max-w-xs overflow-auto">
+            <pre>{envInfo}</pre>
           </div>
         )}
         

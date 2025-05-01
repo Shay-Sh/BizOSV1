@@ -22,104 +22,25 @@ export const createServerClient = () => {
   })
 }
 
-// Get the public environment variables for client components
-export const getClientEnvVars = () => {
-  // Check if we're in the browser
-  const isBrowser = typeof window !== 'undefined';
-  
-  // These values are embedded at build time for client components
-  let supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-  let supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-  
-  // Try to get values from window object if available in the browser
-  // This is sometimes more reliable than process.env in client side
-  if (isBrowser && window && 'ENV_SUPABASE_URL' in window) {
-    // @ts-ignore
-    supabaseUrl = window.ENV_SUPABASE_URL || supabaseUrl;
-  }
-  
-  if (isBrowser && window && 'ENV_SUPABASE_KEY' in window) {
-    // @ts-ignore
-    supabaseKey = window.ENV_SUPABASE_KEY || supabaseKey;
-  }
-  
-  // Log available environment variables in development
-  if (process.env.NODE_ENV === 'development' && isBrowser) {
-    console.log('Environment vars available in client:', {
-      NEXT_PUBLIC_SUPABASE_URL: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    });
-  }
-  
-  // In production, always use the environment variables or hardcoded values as absolute last resort
-  if (!supabaseUrl) {
-    console.warn('Using fallback SUPABASE_URL');
-    supabaseUrl = FALLBACK_SUPABASE_URL;
-  }
-  
-  if (!supabaseKey) {
-    console.warn('Using fallback SUPABASE_ANON_KEY');
-    supabaseKey = FALLBACK_ANON_KEY;
-  }
-  
-  return { supabaseUrl, supabaseKey };
-}
+// Create Supabase browser client that works in any runtime
+// This should be called inside components, hooks, or event handlers - not at module level
+export const supabase = () => {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
-// For client components - with proper error handling
-export const createBrowserSupabaseClient = () => {
-  // Get environment variables
-  const { supabaseUrl, supabaseKey } = getClientEnvVars();
-
-  // Add explicit validation for empty strings
-  if (!supabaseUrl || supabaseUrl.trim() === '') {
-    console.error('ERROR: NEXT_PUBLIC_SUPABASE_URL is empty or not defined');
-    
-    // Force a valid URL in production to prevent crashes
-    const url = FALLBACK_SUPABASE_URL;
-    console.warn(`Using hardcoded URL: ${url.substring(0, 10)}...`);
-    
-    if (!FALLBACK_ANON_KEY || FALLBACK_ANON_KEY.trim() === '') {
-      throw new Error('No valid Supabase URL available');
-    }
-    
-    // Try with the fallback URL and key
-    return createBrowserClient<Database>(FALLBACK_SUPABASE_URL, FALLBACK_ANON_KEY);
-  }
-  
-  if (!supabaseKey || supabaseKey.trim() === '') {
-    console.error('ERROR: NEXT_PUBLIC_SUPABASE_ANON_KEY is empty or not defined');
-    
-    // Force a valid key in production to prevent crashes
-    console.warn(`Using hardcoded API key as fallback`);
-    
-    if (!FALLBACK_ANON_KEY || FALLBACK_ANON_KEY.trim() === '') {
-      throw new Error('No valid Supabase key available');
-    }
-    
-    // Try with the URL and fallback key
-    return createBrowserClient<Database>(supabaseUrl, FALLBACK_ANON_KEY);
+  if (!url || !anon) {
+    console.error('Supabase env vars missing - using fallbacks (this should not happen in production)');
+    // In production, provide fallbacks to prevent crashes
+    return createBrowserClient<Database>(
+      FALLBACK_SUPABASE_URL, 
+      FALLBACK_ANON_KEY
+    );
   }
 
-  try {
-    // Log successful initialization in development
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`Initializing Supabase with URL: ${supabaseUrl.substring(0, 10)}... and key length: ${supabaseKey.length}`);
-    }
-    
-    // Using enhanced options for better session persistence
-    return createBrowserClient<Database>(supabaseUrl, supabaseKey);
-  } catch (error) {
-    console.error('Failed to create Supabase client:', error);
-    
-    // Final fallback attempt
-    console.warn('Attempting with fallback values as last resort');
-    return createBrowserClient<Database>(FALLBACK_SUPABASE_URL, FALLBACK_ANON_KEY);
-  }
-}
+  return createBrowserClient<Database>(url, anon);
+};
 
-// Create a function that safely initializes the browser client
-let browserSupabaseInstance: ReturnType<typeof createBrowserSupabaseClient> | null = null;
-
+// For backwards compatibility
 export const getBrowserSupabase = () => {
   // Skip in SSR context
   if (typeof window === 'undefined') {
@@ -127,11 +48,7 @@ export const getBrowserSupabase = () => {
   }
   
   try {
-    // Create instance if it doesn't exist
-    if (!browserSupabaseInstance) {
-      browserSupabaseInstance = createBrowserSupabaseClient();
-    }
-    return browserSupabaseInstance;
+    return supabase();
   } catch (error) {
     console.error('Error initializing Supabase client:', error);
     // Return null instead of throwing to prevent app crashes
@@ -139,11 +56,11 @@ export const getBrowserSupabase = () => {
   }
 }
 
-// For backwards compatibility - with proper error handling
+// For backwards compatibility - only use within client components, not at module level
 export const browserSupabase = typeof window !== 'undefined' 
   ? (() => {
       try {
-        return createBrowserSupabaseClient();
+        return supabase();
       } catch (error) {
         console.error('Failed to initialize browserSupabase:', error);
         // Return a dummy object to prevent crashes in old code that expects this
