@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { directSupabaseClient, createDirectClient } from '@/lib/supabase/direct-client';
+import { directSupabaseClient, createDirectClient, getDirectSupabaseClient } from '@/lib/supabase/direct-client';
 
 export function SupabaseStatus() {
   const [status, setStatus] = useState<'loading' | 'connected' | 'error'>('loading');
@@ -14,8 +14,9 @@ export function SupabaseStatus() {
     setErrorMessage(null);
 
     try {
-      // Try with the direct client first
-      const { error } = await directSupabaseClient.from('api_keys').select('id').limit(1);
+      // Try with the direct client first - use the getter to ensure fresh instance
+      const client = getDirectSupabaseClient();
+      const { error } = await client.from('api_keys').select('id').limit(1);
       
       if (error) {
         throw error;
@@ -55,22 +56,24 @@ export function SupabaseStatus() {
     return null;
   }
 
-  const isLoading = status === 'loading';
+  // Fix TypeScript error by using an intermediate variable
+  const currentStatus = status;
+  const isLoading = currentStatus === 'loading';
 
   return (
     <div className={`fixed bottom-4 right-4 p-4 rounded-lg shadow-lg ${
-      status === 'connected' ? 'bg-green-100' : status === 'error' ? 'bg-red-100' : 'bg-gray-100'
+      currentStatus === 'connected' ? 'bg-green-100' : currentStatus === 'error' ? 'bg-red-100' : 'bg-gray-100'
     }`}>
       <div className="flex flex-col space-y-2">
         <div className="flex items-center space-x-2">
           <div 
             className={`w-4 h-4 rounded-full ${
-              status === 'connected' ? 'bg-green-500' : 
-              status === 'error' ? 'bg-red-500' : 'bg-yellow-500 animate-pulse'
+              currentStatus === 'connected' ? 'bg-green-500' : 
+              currentStatus === 'error' ? 'bg-red-500' : 'bg-yellow-500 animate-pulse'
             }`} 
           />
           <span className="font-medium">
-            Supabase: {status === 'connected' ? 'Connected' : status === 'error' ? 'Error' : 'Checking...'}
+            Supabase: {currentStatus === 'connected' ? 'Connected' : currentStatus === 'error' ? 'Error' : 'Checking...'}
           </span>
           <button 
             onClick={() => setIsVisible(false)} 
@@ -96,7 +99,7 @@ export function SupabaseStatus() {
             Retry
           </Button>
           
-          {status === 'error' && (
+          {currentStatus === 'error' && (
             <Button 
               size="sm" 
               variant="default" 

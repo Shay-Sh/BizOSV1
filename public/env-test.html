@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Environment Variable Test</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; line-height: 1.5; }
+    .container { max-width: 800px; margin: 0 auto; }
+    pre { background: #f5f5f5; padding: 1rem; border-radius: 4px; overflow: auto; }
+    button { background: #0070f3; color: white; border: none; padding: 0.5rem 1rem; 
+             border-radius: 4px; cursor: pointer; font-size: 1rem; margin-right: 0.5rem; }
+    button:hover { background: #0051a8; }
+    .error { color: #d32f2f; }
+    .success { color: #388e3c; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Supabase Environment Test</h1>
+    
+    <div id="results">
+      <p>Click the buttons below to test if environment variables are available:</p>
+    </div>
+    
+    <div>
+      <button onclick="checkWindowVars()">Check Window Variables</button>
+      <button onclick="testSupabaseConnection()">Test Supabase Connection</button>
+    </div>
+    
+    <div id="output">
+      <h3>Results:</h3>
+      <pre id="result-output"></pre>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // Check window variables
+    function checkWindowVars() {
+      const output = document.getElementById('result-output');
+      const windowVars = {};
+      
+      // Check specific variables
+      if (window.ENV_SUPABASE_URL) {
+        windowVars.ENV_SUPABASE_URL = window.ENV_SUPABASE_URL.substring(0, 10) + '...';
+      }
+      
+      if (window.ENV_SUPABASE_KEY) {
+        windowVars.ENV_SUPABASE_KEY = window.ENV_SUPABASE_KEY.substring(0, 5) + '...';
+      }
+      
+      if (window.NEXT_PUBLIC_SUPABASE_URL) {
+        windowVars.NEXT_PUBLIC_SUPABASE_URL = window.NEXT_PUBLIC_SUPABASE_URL.substring(0, 10) + '...';
+      }
+      
+      if (window.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        windowVars.NEXT_PUBLIC_SUPABASE_ANON_KEY = window.NEXT_PUBLIC_SUPABASE_ANON_KEY.substring(0, 5) + '...';
+      }
+      
+      // Find all environment variables on window
+      for (const key in window) {
+        if (key.startsWith('ENV_') || key.startsWith('NEXT_PUBLIC_')) {
+          const value = window[key];
+          if (typeof value === 'string') {
+            windowVars[key] = value.length > 10 ? value.substring(0, 5) + '...' : value;
+          }
+        }
+      }
+      
+      if (Object.keys(windowVars).length === 0) {
+        output.innerHTML = '<span class="error">No environment variables found on window object!</span>';
+      } else {
+        output.innerHTML = JSON.stringify(windowVars, null, 2);
+      }
+    }
+    
+    // Test Supabase connection
+    function testSupabaseConnection() {
+      const output = document.getElementById('result-output');
+      output.innerHTML = 'Testing Supabase connection...';
+      
+      try {
+        // Check if Supabase is loaded
+        if (typeof supabase === 'undefined') {
+          throw new Error('Supabase library not loaded yet. Try again in a few seconds.');
+        }
+        
+        // Get variables from window if available
+        const supabaseUrl = window.ENV_SUPABASE_URL || window.NEXT_PUBLIC_SUPABASE_URL || '';
+        const supabaseKey = window.ENV_SUPABASE_KEY || window.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+        
+        if (!supabaseUrl || !supabaseKey) {
+          throw new Error('Missing Supabase URL or key. Environment variables not properly set.');
+        }
+        
+        // Create client
+        const client = supabase.createClient(supabaseUrl, supabaseKey);
+        
+        // Try a simple query
+        client.from('api_keys').select('id').limit(1)
+          .then(response => {
+            if (response.error) {
+              output.innerHTML = '<span class="error">Error connecting to Supabase: ' + response.error.message + '</span>';
+            } else {
+              output.innerHTML = '<span class="success">Successfully connected to Supabase!</span><br><pre>' + 
+                               JSON.stringify({url: supabaseUrl.substring(0, 10) + '...', success: true}, null, 2) + '</pre>';
+            }
+          })
+          .catch(err => {
+            output.innerHTML = '<span class="error">Error in Supabase query: ' + err.message + '</span>';
+          });
+      } catch (error) {
+        output.innerHTML = '<span class="error">Error: ' + error.message + '</span>';
+      }
+    }
+  </script>
+</body>
+</html> 
