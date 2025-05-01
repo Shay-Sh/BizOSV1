@@ -10,6 +10,11 @@ import { AgentFlow } from '@/types/agent-builder';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import FlowBuilder from '@/components/AgentBuilder/FlowBuilder';
+import GmailConnect from '@/components/AgentBuilder/GmailConnect';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import TestAgentModal from '@/components/AgentBuilder/TestAgentModal';
+import { Flow, NodeType } from '@/lib/agent-builder/engine';
 
 export default function AgentPage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -19,6 +24,17 @@ export default function AgentPage({ params }: { params: { id: string } }) {
   const [agent, setAgent] = useState<AgentFlow | null>(null);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [activeTab, setActiveTab] = useState('design');
+  const [showTestModal, setShowTestModal] = useState(false);
+
+  useEffect(() => {
+    // Check for tab in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const tab = urlParams.get('tab');
+    if (tab && ['design', 'settings', 'logs'].includes(tab)) {
+      setActiveTab(tab);
+    }
+  }, []);
 
   useEffect(() => {
     // Fetch agent data when the component mounts
@@ -95,6 +111,26 @@ export default function AgentPage({ params }: { params: { id: string } }) {
     }
   };
 
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    // Update URL without navigation
+    const url = new URL(window.location.href);
+    url.searchParams.set('tab', value);
+    window.history.pushState({}, '', url);
+  };
+
+  // Convert AgentFlow to Flow for compatibility with TestAgentModal
+  const getFlowFromAgent = (): Flow | null => {
+    if (!agent) return null;
+    
+    return {
+      id: agent.id,
+      name: agent.name,
+      nodes: agent.nodes || [],
+      edges: agent.edges || [],
+    };
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto py-8">
@@ -121,6 +157,9 @@ export default function AgentPage({ params }: { params: { id: string } }) {
       </div>
     );
   }
+  
+  // Get the flow for the TestAgentModal
+  const flow = getFlowFromAgent();
 
   return (
     <div className="container mx-auto py-8">
@@ -132,66 +171,98 @@ export default function AgentPage({ params }: { params: { id: string } }) {
             </Button>
           </Link>
           <div>
-            <h1 className="text-2xl font-bold">Edit Agent</h1>
-            <p className="text-muted-foreground">Configure your agent workflow</p>
+            <h1 className="text-2xl font-bold">{name}</h1>
+            <p className="text-muted-foreground">{description || 'Configure your agent workflow'}</p>
           </div>
         </div>
-        <Button 
-          variant="default" 
-          onClick={handleSave} 
-          disabled={saving}
-          className="flex items-center gap-2"
-        >
-          <Save className="h-4 w-4" />
-          {saving ? 'Saving...' : 'Save Changes'}
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            onClick={() => setShowTestModal(true)}
+          >
+            Test Agent
+          </Button>
+          <Button 
+            variant="default" 
+            onClick={handleSave} 
+            disabled={saving}
+            className="flex items-center gap-2"
+          >
+            <Save className="h-4 w-4" />
+            {saving ? 'Saving...' : 'Save Changes'}
+          </Button>
+        </div>
       </div>
       
-      <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Basic Information</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="name">Agent Name</Label>
-                <Input
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="My Gmail Agent"
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="description">Description</Label>
-                <Input
-                  id="description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Describe what this agent does"
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      <Tabs value={activeTab} onValueChange={handleTabChange}>
+        <TabsList className="mb-4">
+          <TabsTrigger value="design">Design Flow</TabsTrigger>
+          <TabsTrigger value="settings">Settings</TabsTrigger>
+          <TabsTrigger value="logs">Execution Logs</TabsTrigger>
+        </TabsList>
         
-        <Card>
-          <CardHeader>
-            <CardTitle>Agent Builder (Coming Soon)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="p-6 flex flex-col items-center justify-center border rounded-md border-dashed">
-              <p className="text-muted-foreground text-center">
-                The agent builder UI is being restored. Please check back soon or create a test agent from the test page.
+        <TabsContent value="design" className="space-y-4">
+          <FlowBuilder 
+            agentId={params.id}
+            initialNodes={agent.nodes || []}
+            initialEdges={agent.edges || []}
+          />
+        </TabsContent>
+        
+        <TabsContent value="settings" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Basic Information</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="name">Agent Name</Label>
+                  <Input
+                    id="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="My Gmail Agent"
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="description">Description</Label>
+                  <Input
+                    id="description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Describe what this agent does"
+                  />
+                </div>
+                <Button onClick={handleSave} disabled={saving} className="mt-2 w-full sm:w-auto">
+                  {saving ? 'Saving...' : 'Save Changes'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="logs" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Execution Logs</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-center text-muted-foreground py-8">
+                Execution logs will appear here after you run the agent.
               </p>
-              <Link href="/agent-builder/test" className="mt-4">
-                <Button variant="outline">Go to Test Page</Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+      
+      {flow && (
+        <TestAgentModal 
+          open={showTestModal} 
+          onOpenChange={setShowTestModal} 
+          agent={flow}
+        />
+      )}
     </div>
   );
 } 

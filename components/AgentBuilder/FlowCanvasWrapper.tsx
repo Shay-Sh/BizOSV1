@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { ReactFlowProvider } from 'reactflow';
+import { ReactFlowProvider, useReactFlow } from 'reactflow';
 import FlowCanvas from './FlowCanvas';
 import NodePalette from './NodePalette';
 import TriggerNode from './nodes/TriggerNode';
 import ClassifierNode from './nodes/ClassifierNode';
 import ActionNode from './nodes/ActionNode';
-import { toast } from '@/components/ui/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { Save, Play } from 'lucide-react';
 
@@ -24,25 +24,41 @@ interface FlowCanvasWrapperProps {
   readOnly?: boolean;
 }
 
-const FlowCanvasWrapper = ({
+const FlowCanvasWrapperContent = ({
   agentId,
   initialNodes = [],
   initialEdges = [],
   readOnly = false,
 }: FlowCanvasWrapperProps) => {
   const router = useRouter();
+  const { toast } = useToast();
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const [nodes, setNodes] = useState<any[]>(initialNodes);
   const [edges, setEdges] = useState<any[]>(initialEdges);
   const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
+  const reactFlowInstance$ = useReactFlow();
 
   // Initialize empty flow if no initial data
   useEffect(() => {
     if (initialNodes.length > 0) {
-      setNodes(initialNodes);
+      // Transform nodes to add the onDataChange handler
+      const nodesWithHandlers = initialNodes.map(node => ({
+        ...node,
+        data: {
+          ...node.data,
+          setNodeData: (id: string, data: any) => {
+            // Update node data when configuration changes
+            setNodes((nds) =>
+              nds.map((n) => (n.id === id ? { ...n, data: { ...n.data, ...data } } : n))
+            );
+          },
+        },
+      }));
+      setNodes(nodesWithHandlers);
     }
+    
     if (initialEdges.length > 0) {
       setEdges(initialEdges);
     }
@@ -82,10 +98,10 @@ const FlowCanvasWrapper = ({
         position,
         data: {
           ...nodeData,
-          onDataChange: (id: string, data: any) => {
+          setNodeData: (id: string, data: any) => {
             // Update node data when configuration changes
             setNodes((nds) =>
-              nds.map((node) => (node.id === id ? { ...node, data } : node))
+              nds.map((n) => (n.id === id ? { ...n, data: { ...n.data, ...data } } : n))
             );
           },
         },
@@ -111,7 +127,7 @@ const FlowCanvasWrapper = ({
     try {
       // Filter out unwanted node data properties before saving
       const sanitizedNodes = nodes.map((node) => {
-        const { onDataChange, ...nodeData } = node.data;
+        const { setNodeData, ...nodeData } = node.data;
         return {
           ...node,
           data: nodeData,
@@ -147,7 +163,7 @@ const FlowCanvasWrapper = ({
     } finally {
       setIsSaving(false);
     }
-  }, [agentId, nodes, edges]);
+  }, [agentId, nodes, edges, toast]);
 
   // Test the flow
   const handleTestFlow = useCallback(async () => {
@@ -182,51 +198,70 @@ const FlowCanvasWrapper = ({
     } finally {
       setIsTesting(false);
     }
-  }, [agentId, router]);
+  }, [agentId, router, toast]);
+
+  // When saving, update the flow with current nodes and edges
+  const onSave = useCallback(() => {
+    if (reactFlowInstance) {
+      const flow = reactFlowInstance.toObject();
+      handleSaveFlow();
+    }
+  }, [reactFlowInstance, handleSaveFlow]);
 
   return (
-    <ReactFlowProvider>
-      <div className="flex h-full">
-        {!readOnly && (
-          <div className="border-r h-full">
-            <NodePalette onDragStart={onDragStart} />
+    <div className="flex h-full">
+      {!readOnly && (
+        <div className="border-r h-full">
+          <NodePalette onDragStart={onDragStart} />
+        </div>
+      )}
+      
+      <div className="flex-1 relative" ref={reactFlowWrapper}>
+        <div 
+          className="absolute top-0 left-0 w-full h-full"
+          onDrop={onDrop}
+          onDragOver={onDragOver}
+        >
+          <FlowCanvas
+            initialNodes={nodes}
+            initialEdges={edges}
+            onSave={handleSaveFlow}
+            readOnly={readOnly}
+            isLoading={isSaving}
+          />
+        </div>
+
+        {!readOnly && agentId && (
+          <div className="absolute bottom-4 right-4 flex gap-2">
+            <Button
+              variant="outline"
+              onClick={handleSaveFlow}
+              disabled={isSaving}
+              className="flex items-center gap-2"
+            >
+              <Save size={16} />
+              Save
+            </Button>
+            <Button
+              onClick={handleTestFlow}
+              disabled={isTesting || nodes.length === 0}
+              className="flex items-center gap-2"
+            >
+              <Play size={16} />
+              Test Flow
+            </Button>
           </div>
         )}
-        
-        <div className="flex-1 relative" ref={reactFlowWrapper}>
-          <div className="absolute top-0 left-0 w-full h-full">
-            <FlowCanvas
-              initialNodes={nodes}
-              initialEdges={edges}
-              onSave={handleSaveFlow}
-              readOnly={readOnly}
-              isLoading={isSaving}
-            />
-          </div>
-
-          {!readOnly && agentId && (
-            <div className="absolute bottom-4 right-4 flex gap-2">
-              <Button
-                variant="outline"
-                onClick={handleSaveFlow}
-                disabled={isSaving}
-                className="flex items-center gap-2"
-              >
-                <Save size={16} />
-                Save
-              </Button>
-              <Button
-                onClick={handleTestFlow}
-                disabled={isTesting || nodes.length === 0}
-                className="flex items-center gap-2"
-              >
-                <Play size={16} />
-                Test Flow
-              </Button>
-            </div>
-          )}
-        </div>
       </div>
+    </div>
+  );
+};
+
+// Wrapper component with ReactFlowProvider
+const FlowCanvasWrapper = (props: FlowCanvasWrapperProps) => {
+  return (
+    <ReactFlowProvider>
+      <FlowCanvasWrapperContent {...props} />
     </ReactFlowProvider>
   );
 };

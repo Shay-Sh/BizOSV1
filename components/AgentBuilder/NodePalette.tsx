@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Mail, Brain, Tag } from 'lucide-react';
+import { Mail, Brain, Tag, Archive, MoveRight, Clock, Star, AlertTriangle, BookOpen } from 'lucide-react';
 
 // Define node types for the agent builder
 export type NodeType = 'triggerNode' | 'classifierNode' | 'actionNode';
@@ -21,6 +21,19 @@ const nodeCategories = [
           checkInterval: 5,
           intervalUnit: 'minutes'
         }
+      },
+      { 
+        type: 'triggerNode', 
+        label: 'Scheduled Trigger', 
+        description: 'Run at scheduled times',
+        icon: <Clock className="h-4 w-4" />,
+        data: { 
+          nodeType: 'trigger',
+          service: 'schedule',
+          schedule: 'daily',
+          time: '09:00',
+          days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']
+        }
       }
     ]
   },
@@ -38,6 +51,30 @@ const nodeCategories = [
           model: 'gpt-4o',
           prompt: 'Classify this email into one of the following categories: '
         }
+      },
+      { 
+        type: 'classifierNode', 
+        label: 'Priority Classifier', 
+        description: 'Determine email priority',
+        icon: <Star className="h-4 w-4" />,
+        data: { 
+          nodeType: 'classifier',
+          llmProvider: 'openai',
+          model: 'gpt-4o',
+          prompt: 'Classify this email by priority: urgent, important, normal, low'
+        }
+      },
+      { 
+        type: 'classifierNode', 
+        label: 'Sentiment Analyzer', 
+        description: 'Analyze email sentiment',
+        icon: <AlertTriangle className="h-4 w-4" />,
+        data: { 
+          nodeType: 'classifier',
+          llmProvider: 'openai',
+          model: 'gpt-4o',
+          prompt: 'Analyze the sentiment of this email: positive, negative, neutral'
+        }
       }
     ]
   },
@@ -54,6 +91,53 @@ const nodeCategories = [
           actionType: 'applyLabel',
           service: 'gmail',
           label: ''
+        }
+      },
+      { 
+        type: 'actionNode', 
+        label: 'Archive Email', 
+        description: 'Archive matching emails',
+        icon: <Archive className="h-4 w-4" />,
+        data: { 
+          nodeType: 'action',
+          actionType: 'archive',
+          service: 'gmail'
+        }
+      },
+      { 
+        type: 'actionNode', 
+        label: 'Move Email', 
+        description: 'Move to specific folder',
+        icon: <MoveRight className="h-4 w-4" />,
+        data: { 
+          nodeType: 'action',
+          actionType: 'move',
+          service: 'gmail',
+          destination: ''
+        }
+      },
+      { 
+        type: 'actionNode', 
+        label: 'Mark Important', 
+        description: 'Mark emails as important',
+        icon: <Star className="h-4 w-4" />,
+        data: { 
+          nodeType: 'action',
+          actionType: 'markImportant',
+          service: 'gmail'
+        }
+      },
+      { 
+        type: 'actionNode', 
+        label: 'Summarize', 
+        description: 'Generate email summary',
+        icon: <BookOpen className="h-4 w-4" />,
+        data: { 
+          nodeType: 'action',
+          actionType: 'summarize',
+          service: 'gmail',
+          llmProvider: 'openai',
+          model: 'gpt-4o'
         }
       }
     ]
