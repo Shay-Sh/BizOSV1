@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getBrowserSupabase, getClientEnvVars } from '@/lib/supabase/client';
+import { getBrowserSupabase, supabase } from '@/lib/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -22,26 +22,27 @@ export function SupabaseDiagnostics() {
 
   const runDiagnostics = async () => {
     try {
-      // Check environment variables
-      const envVars = getClientEnvVars();
+      // Get environment variables directly
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
       
       // Update state with initial findings
       setDiagnostics(prev => ({
         ...prev,
-        envVars,
+        envVars: { supabaseUrl, supabaseKey },
         connectionStatus: 'checking',
         error: null
       }));
       
-      // Test Supabase connection
-      const supabase = getBrowserSupabase();
+      // Test Supabase connection - get a fresh client
+      const supabaseClient = supabase();
       
-      if (!supabase) {
+      if (!supabaseClient) {
         throw new Error('Failed to initialize Supabase client');
       }
       
       // Try to get user session - this operation should work regardless of schema
-      const { data, error } = await supabase.auth.getSession();
+      const { data, error } = await supabaseClient.auth.getSession();
       
       if (error) {
         throw error;

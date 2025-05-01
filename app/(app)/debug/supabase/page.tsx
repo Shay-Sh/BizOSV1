@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getBrowserSupabase, getClientEnvVars } from '@/lib/supabase/client';
+import { getBrowserSupabase, supabase } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -57,26 +57,27 @@ export default function SupabaseDebugPage() {
 
   const runDiagnostics = async () => {
     try {
-      // Check environment variables
-      const envVars = getClientEnvVars();
+      // Get environment variables directly
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
       
       // Update state with initial findings
       setDiagnostics(prev => ({
         ...prev,
-        envVars,
+        envVars: { supabaseUrl, supabaseKey },
         connectionStatus: 'checking',
         error: null
       }));
       
-      // Test Supabase connection
-      const supabase = getBrowserSupabase();
+      // Test Supabase connection - get a fresh client
+      const supabaseClient = supabase();
       
-      if (!supabase) {
+      if (!supabaseClient) {
         throw new Error('Failed to initialize Supabase client');
       }
       
       // Try to get user session
-      const { data, error } = await supabase.auth.getSession();
+      const { data, error } = await supabaseClient.auth.getSession();
       
       if (error) {
         throw error;
@@ -87,7 +88,7 @@ export default function SupabaseDebugPage() {
       for (const table of tablesToCheck) {
         try {
           // Just check if the table exists by trying to count rows
-          const { count, error } = await supabase
+          const { count, error } = await supabaseClient
             .from(table as TableName)
             .select('*', { count: 'exact', head: true });
           
